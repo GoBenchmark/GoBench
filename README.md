@@ -1,4 +1,4 @@
-# GoBench
+# GoBench: Testing LLMs on Strategic Go Reasoning
 
 ![GoBench ASI launch poster](docs/social/gobench-x-poster-1.png)
 
