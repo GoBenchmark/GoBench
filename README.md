@@ -225,6 +225,74 @@ Build a local leaderboard from saved runs:
 python -m gobench.cli leaderboard data/runs
 ```
 
+<a id="official-benchmark-submissions"></a>
+
+## 🏁 Official Benchmark Submissions
+
+Public-dev runs are welcome for debugging prompts, API setup, legality, and
+visualization, but they are not official leaderboard claims. An official
+GoBench v0.1 submission must use the closed `official_v0_1` suite held by the
+benchmark maintainer.
+
+Official submissions must:
+
+- Generate moves through a documented model API or compatible API gateway
+  configured in a GoBench model profile.
+- Use a fixed model id, provider, API transport, reasoning/effort setting,
+  prompt template, and prompt SHA-256.
+- Use real KataGo scoring with the published official config or a documented
+  successor, not the mock scorer.
+- Preserve `run.json`, `predictions.jsonl`, `raw_responses.jsonl`,
+  `results.jsonl`, `metrics.json`, and `report.md`.
+- Report aggregate metrics, model identity, prompt hash, scorer/KataGo
+  settings, token counts, latency, run date, and whether the suite is
+  `public_dev` or `official_v0_1`.
+
+After receiving authorized access to the official hidden suite, use this compact
+command flow:
+
+```bash
+export GOBENCH_SCORER=katago
+export KATAGO_BIN=/path/to/katago
+export KATAGO_MODEL=/path/to/model.bin.gz
+export KATAGO_CONFIG=configs/katago_gobench_official.cfg
+export KATAGO_MAX_VISITS=2048
+export KATAGO_ANALYSIS_PV_LEN=12
+
+RUN_DIR=data/runs/your-model-official-v0-1
+
+python -m gobench.cli run \
+  --model-profile .gobench/model.yaml \
+  --suite suites/official_v0_1.yaml \
+  --out "$RUN_DIR" \
+  --no-visualize
+
+python -m gobench.cli bundle-submission "$RUN_DIR"
+```
+
+`bundle-submission` validates the required files and writes
+`data/runs/your-model-official-v0-1-submission.tar.gz`. Submit that archive
+plus the checklist in `docs/submission.md` through the maintainer-approved
+submission channel. Do not publish hidden-suite positions, labels, prompts
+containing hidden positions, or visualization artifacts for official runs.
+
+The following are not accepted as official leaderboard submissions:
+`codex_exec`, `codex exec`, private Codex runners, shell-based agent loops,
+browser/computer-use automation, tool-assisted model runs, public-dev scores,
+mock-scored runs, or runs that expose hidden positions or labels.
+
+For the full submission checklist, see `docs/submission.md`. For the protocol,
+hidden-suite outline, and anti-contamination policy, see the
+[Official v0.1 Hidden Suite](#official-v0-1-hidden-suite) section and
+`BENCHMARK.md`.
+
+For quick CI/dev smoke tests without KataGo, keep using synthetic toy data in a
+separate directory:
+
+```bash
+python -m gobench.cli make-toy-data --out data/toy_dev --n 20
+```
+
 ## 🧭 Profile-Based Workflow
 
 GoBench supports benchmark-style model and suite profiles:
@@ -358,6 +426,8 @@ prefixes through 199 moves require about 1,000 KataGo root queries before any
 labeling. During generation, progress is printed to stderr at position start,
 every 10 played moves, and position completion.
 
+<a id="official-v0-1-hidden-suite"></a>
+
 ## 🔒 Official v0.1 Hidden Suite
 
 The public repository declares the official v0.1 protocol in
@@ -381,72 +451,6 @@ python -m gobench.cli make-katago-selfplay-data \
 This creates 50 independent KataGo-guided game prefixes, evenly distributed
 from move 5 through move 300. Keep `data/official_v0_1` private; official
 leaderboard results should report only aggregate metrics and run artifacts.
-
-<a id="official-benchmark-submissions"></a>
-
-## 🏁 Official Benchmark Submissions
-
-Public-dev runs are welcome for debugging prompts, API setup, legality, and
-visualization, but they are not official leaderboard claims. An official
-GoBench v0.1 submission must use the closed `official_v0_1` suite held by the
-benchmark maintainer.
-
-Official submissions must:
-
-- Generate moves through a documented model API or compatible API gateway
-  configured in a GoBench model profile.
-- Use a fixed model id, provider, API transport, reasoning/effort setting,
-  prompt template, and prompt SHA-256.
-- Use real KataGo scoring with the published official config or a documented
-  successor, not the mock scorer.
-- Preserve `run.json`, `predictions.jsonl`, `raw_responses.jsonl`,
-  `results.jsonl`, `metrics.json`, and `report.md`.
-- Report aggregate metrics, model identity, prompt hash, scorer/KataGo
-  settings, token counts, latency, run date, and whether the suite is
-  `public_dev` or `official_v0_1`.
-
-After receiving authorized access to the official hidden suite, use this compact
-command flow:
-
-```bash
-export GOBENCH_SCORER=katago
-export KATAGO_BIN=/path/to/katago
-export KATAGO_MODEL=/path/to/model.bin.gz
-export KATAGO_CONFIG=configs/katago_gobench_official.cfg
-export KATAGO_MAX_VISITS=2048
-export KATAGO_ANALYSIS_PV_LEN=12
-
-RUN_DIR=data/runs/your-model-official-v0-1
-
-python -m gobench.cli run \
-  --model-profile .gobench/model.yaml \
-  --suite suites/official_v0_1.yaml \
-  --out "$RUN_DIR" \
-  --no-visualize
-
-python -m gobench.cli bundle-submission "$RUN_DIR"
-```
-
-`bundle-submission` validates the required files and writes
-`data/runs/your-model-official-v0-1-submission.tar.gz`. Submit that archive
-plus the checklist in `docs/submission.md` through the maintainer-approved
-submission channel. Do not publish hidden-suite positions, labels, prompts
-containing hidden positions, or visualization artifacts for official runs.
-
-The following are not accepted as official leaderboard submissions:
-`codex_exec`, `codex exec`, private Codex runners, shell-based agent loops,
-browser/computer-use automation, tool-assisted model runs, public-dev scores,
-mock-scored runs, or runs that expose hidden positions or labels.
-
-For the full submission checklist, see `docs/submission.md`. For the protocol
-and anti-contamination policy, see `BENCHMARK.md`.
-
-For quick CI/dev smoke tests without KataGo, keep using synthetic toy data in a
-separate directory:
-
-```bash
-python -m gobench.cli make-toy-data --out data/toy_dev --n 20
-```
 
 ## 📄 Local File Evaluation
 
