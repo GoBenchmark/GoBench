@@ -1,0 +1,10 @@
+{"position_id":"dev_000001","submitted_move":"G12","legal":true,"point_loss":3.73,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":false,"catastrophic_blunder":false,"phase":"opening"}
+{"position_id":"dev_000002","submitted_move":"H12","legal":true,"point_loss":4.63,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":false,"catastrophic_blunder":false,"phase":"opening"}
+{"position_id":"dev_000003","submitted_move":"J12","legal":true,"point_loss":22.76,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":true,"phase":"early_middle"}
+{"position_id":"dev_000004","submitted_move":"K12","legal":true,"point_loss":20.84,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":true,"phase":"early_middle"}
+{"position_id":"dev_000005","submitted_move":"L12","legal":true,"point_loss":19.97,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":true,"phase":"early_middle"}
+{"position_id":"dev_000006","submitted_move":"F19","legal":true,"point_loss":17.16,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":true,"phase":"late_middle"}
+{"position_id":"dev_000007","submitted_move":"G19","legal":true,"point_loss":8.77,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":false,"phase":"late_middle"}
+{"position_id":"dev_000008","submitted_move":"O12","legal":true,"point_loss":6.82,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":false,"phase":"late_middle"}
+{"position_id":"dev_000009","submitted_move":"J19","legal":true,"point_loss":6.87,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":true,"catastrophic_blunder":false,"phase":"endgame"}
+{"position_id":"dev_000010","submitted_move":"K19","legal":true,"point_loss":1.48,"top1_match":false,"top3_match":false,"top10_match":false,"blunder":false,"catastrophic_blunder":false,"phase":"endgame"}

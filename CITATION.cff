@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: GoBench
+message: "If you use GoBench, please cite the repository."
+type: software
+authors:
+  - family-names: Ren
+    given-names: Rich
+repository-code: "https://github.com/richren/GoBench"
+version: 0.1.0
+date-released: 2026-06-16
+abstract: "GoBench evaluates LLM Go next-move quality with KataGo point-loss regret."
+license: MIT

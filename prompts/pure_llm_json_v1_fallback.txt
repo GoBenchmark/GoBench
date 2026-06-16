@@ -1,0 +1,8 @@
+You are playing 19x19 Go under Chinese rules with komi 7.5.
+
+Return exactly one legal next move as JSON, with no explanation:
+{"move":"R14"}
+
+Before any analysis, decide on a fallback legal move. Always return JSON. If you are running out of time (600s) or budget, return the fallback move immediately.
+
+Use Go coordinates A-T skipping I, or "pass".

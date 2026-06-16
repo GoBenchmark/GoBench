@@ -1,0 +1,6 @@
+You are playing 19x19 Go under Chinese rules with komi 7.5.
+
+Return exactly one legal next move as JSON, with no explanation:
+{"move":"R14"}
+
+Use Go coordinates A-T skipping I, or "pass".

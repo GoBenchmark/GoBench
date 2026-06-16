@@ -1,0 +1,17 @@
+.env.local
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Personal/private adapters and scratch files. Do not publish.
+/private/
+
+# Local benchmark outputs. Keep the repository focused on harness + public dev data.
+/data/runs/
+/analysis_logs/
+/data/*.sqlite
+/data/*.sqlite-*
+
+# Closed official suites are generated and stored privately.
+/data/official_v0_1/

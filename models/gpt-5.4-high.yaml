@@ -1,0 +1,7 @@
+name: gpt-5.4-high
+provider: openai
+model: gpt-5.4
+reasoning_effort: high
+temperature:
+max_output_tokens: 20000
+prompt_template: prompts/pure_llm_json_v1.txt

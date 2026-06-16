@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-06-15T18:06:33.874241+00:00",
+  "generator": "katago-analysis-selfplay",
+  "katago_analysis_pv_len": 8,
+  "katago_bin": "/opt/homebrew/bin/katago",
+  "katago_config": "configs/katago_gobench_official.cfg",
+  "katago_generation_visits": 128,
+  "katago_model": "/opt/homebrew/Cellar/katago/1.16.4/share/katago/g170-b40c256x2-s5095420928-d1229425124.bin.gz",
+  "label_scorer": "mock",
+  "label_visits": null,
+  "max_target_moves": 199,
+  "min_target_moves": 5,
+  "policy_temperature": 0.5,
+  "positions": 10,
+  "seed": 42,
+  "stone_counts": [
+    5,
+    27,
+    48,
+    70,
+    90,
+    74,
+    130,
+    100,
+    167,
+    187
+  ],
+  "target_moves": [
+    5,
+    27,
+    48,
+    70,
+    91,
+    113,
+    134,
+    156,
+    177,
+    199
+  ],
+  "top_k": 5
+}

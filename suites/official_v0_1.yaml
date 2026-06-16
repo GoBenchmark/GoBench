@@ -1,0 +1,10 @@
+name: official_v0_1
+description: Closed 50-position GoBench v0.1 suite spanning 5 to 300 self-play moves for official leaderboard evaluation.
+visibility: official_hidden
+canary: "gobench-official-v0.1-hidden-canary DO-NOT-TRAIN"
+positions: data/official_v0_1/positions.jsonl
+max_positions: 50
+scorer: katago-1.16.4
+primary_metric: mean_point_loss
+katago_max_visits: 2048
+katago_analysis_pv_len: 12
