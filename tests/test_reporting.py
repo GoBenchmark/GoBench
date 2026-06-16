@@ -32,8 +32,8 @@ def test_write_run_artifacts_creates_metadata_metrics_and_report(tmp_path):
     }
     metrics = {
         "count": 2,
-        "gobench_score": 50.0,
-        "mean_point_loss": 3.5,
+        "gobench_score": 50.126,
+        "mean_point_loss": 3.456,
         "legal_move_rate": 1.0,
         "top1_match_rate": 0.0,
         "top3_match_rate": 0.5,
@@ -41,18 +41,19 @@ def test_write_run_artifacts_creates_metadata_metrics_and_report(tmp_path):
         "blunder_rate": 0.5,
         "catastrophic_blunder_rate": 0.0,
         "pass_rate": 0.0,
-        "phase_mpl": {"opening": 1.0},
+        "phase_mpl": {"opening": 1.234},
     }
 
     summary = write_run_artifacts(tmp_path, metadata, metrics, completed=True, error=None)
 
     assert summary["completed"] is True
     assert json.loads((tmp_path / "run.json").read_text())["model"] == "gpt-test"
-    assert json.loads((tmp_path / "metrics.json").read_text())["metrics"]["gobench_score"] == 50.0
+    assert json.loads((tmp_path / "metrics.json").read_text())["metrics"]["gobench_score"] == 50.126
     report = (tmp_path / "report.md").read_text()
     assert "# GoBench Run: example-run" in report
-    assert "| GoBench Score | 50 / 100 |" in report
-    assert "| opening | 1 |" in report
+    assert "| GoBench Score | 50.13 / 100 |" in report
+    assert "| Mean Point Loss | 3.46 |" in report
+    assert "| opening | 1.23 |" in report
     assert "## Run Telemetry" in report
     assert "| Run elapsed | 00:02:03 |" in report
     assert "| Total tokens | 123 |" in report
@@ -94,7 +95,7 @@ def test_leaderboard_backfills_score_for_old_metrics(tmp_path):
 
     leaderboard = render_leaderboard(load_run_summaries(tmp_path))
 
-    assert "8.208" in leaderboard
+    assert "8.21" in leaderboard
 
 
 def test_leaderboard_places_empty_runs_last(tmp_path):

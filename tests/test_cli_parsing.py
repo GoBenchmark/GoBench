@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import pytest
@@ -5,15 +6,21 @@ import pytest
 from gobench.api.schemas import MoveSubmission, Position, ScoreResult
 from gobench.cli import (
     build_run_metadata_from_profiles,
+    add_run_visualization_parser,
+    cmd_configure,
+    extract_anthropic_text,
     format_duration,
     generate_from_profile,
     infer_generation_error,
+    list_model_presets,
     latest_unresolved_errors,
     openai_timeout_seconds,
     parse_move_text,
     preserve_existing_run_metadata,
     progress_line,
     recover_completed_raw_predictions,
+    request_openai_chat_move,
+    resolve_default_model_profile,
     score_predictions_for_suite,
     sha256_text,
     timer_event_line,
@@ -32,6 +39,25 @@ def test_parse_move_text_treats_incomplete_or_empty_as_invalid():
 
 def test_parse_move_text_extracts_json_move_for_completed_response():
     assert parse_move_text('{"move":"R14"}', "completed") == "R14"
+
+
+def test_run_visualization_parser_can_default_to_open_browser():
+    parser = argparse.ArgumentParser()
+    add_run_visualization_parser(parser, default_visualize=True, default_open=True)
+
+    defaults = parser.parse_args([])
+    explicit_open = parser.parse_args(["--open"])
+    no_open = parser.parse_args(["--no-open"])
+    no_visualize = parser.parse_args(["--no-visualize"])
+
+    assert defaults.visualize is True
+    assert defaults.open is True
+    assert explicit_open.visualize is True
+    assert explicit_open.open is True
+    assert no_open.visualize is True
+    assert no_open.open is False
+    assert no_visualize.visualize is False
+    assert no_visualize.open is False
 
 
 def test_openai_timeout_seconds_defaults_to_shorter_timeout(monkeypatch):
@@ -72,6 +98,205 @@ def test_timer_can_be_disabled(monkeypatch):
     monkeypatch.setenv("GOBENCH_TIMER_INTERVAL_SECONDS", "0")
 
     assert timer_interval_seconds(inline=True) == 0.0
+
+
+def test_configure_writes_local_profile_and_env_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    cmd_configure(
+        preset=None,
+        provider="openai",
+        model="gpt-test",
+        api_key_env=None,
+        api_base=None,
+        reasoning_effort="medium",
+        temperature=None,
+        max_output_tokens=4096,
+        prompt_template="prompts/pure_llm_json_v1.txt",
+        api_key="sk-test",
+        scorer="katago",
+        katago_bin="/usr/local/bin/katago",
+        katago_model="/models/model.bin.gz",
+        katago_config="configs/katago_gobench_official.cfg",
+        katago_max_visits=512,
+        katago_analysis_pv_len=8,
+        profile_path=".gobench/model.yaml",
+        env_file=".env.local",
+        force=False,
+    )
+
+    profile = (tmp_path / ".gobench/model.yaml").read_text(encoding="utf-8")
+    env = (tmp_path / ".env.local").read_text(encoding="utf-8")
+    assert "model: gpt-test" in profile
+    assert "api_key_env: OPENAI_API_KEY" in profile
+    assert "reasoning_effort: medium" in profile
+    assert "max_output_tokens: 4096" in profile
+    assert "OPENAI_API_KEY=sk-test" in env
+    assert "GOBENCH_SCORER=katago" in env
+    assert "KATAGO_MAX_VISITS=512" in env
+
+
+def test_configure_preserves_existing_env_entries_and_requires_force(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".env.local").write_text("CUSTOM_FLAG=1\nGOBENCH_SCORER=mock\n", encoding="utf-8")
+    (tmp_path / ".gobench").mkdir()
+    (tmp_path / ".gobench/model.yaml").write_text("existing: true\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="already exists"):
+        cmd_configure(
+            preset=None,
+            provider="openai",
+            model="gpt-test",
+            api_key_env=None,
+            api_base=None,
+            reasoning_effort="low",
+            temperature=None,
+            max_output_tokens=2000,
+            prompt_template="prompts/pure_llm_json_v1.txt",
+            api_key=None,
+            scorer="mock",
+            katago_bin=None,
+            katago_model=None,
+            katago_config="configs/katago_gobench_official.cfg",
+            katago_max_visits=2048,
+            katago_analysis_pv_len=12,
+            profile_path=".gobench/model.yaml",
+            env_file=".env.local",
+            force=False,
+        )
+
+    cmd_configure(
+        preset=None,
+        provider="openai",
+        model="gpt-test",
+        api_key_env=None,
+        api_base=None,
+        reasoning_effort="low",
+        temperature=None,
+        max_output_tokens=2000,
+        prompt_template="prompts/pure_llm_json_v1.txt",
+        api_key=None,
+        scorer="mock",
+        katago_bin=None,
+        katago_model=None,
+        katago_config="configs/katago_gobench_official.cfg",
+        katago_max_visits=2048,
+        katago_analysis_pv_len=12,
+        profile_path=".gobench/model.yaml",
+        env_file=".env.local",
+        force=True,
+    )
+
+    env = (tmp_path / ".env.local").read_text(encoding="utf-8")
+    assert "CUSTOM_FLAG=1" in env
+    assert env.count("GOBENCH_SCORER=") == 1
+    assert "GOBENCH_SCORER=mock" in env
+
+
+def test_configure_deepseek_preset_writes_openai_compatible_profile(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    cmd_configure(
+        preset="deepseek",
+        provider=None,
+        model=None,
+        api_key_env=None,
+        api_base=None,
+        reasoning_effort=None,
+        temperature=None,
+        max_output_tokens=None,
+        prompt_template="prompts/pure_llm_json_v1.txt",
+        api_key="deepseek-key",
+        scorer="mock",
+        katago_bin=None,
+        katago_model=None,
+        katago_config="configs/katago_gobench_official.cfg",
+        katago_max_visits=2048,
+        katago_analysis_pv_len=12,
+        profile_path=".gobench/model.yaml",
+        env_file=".env.local",
+        force=False,
+    )
+
+    profile = (tmp_path / ".gobench/model.yaml").read_text(encoding="utf-8")
+    env = (tmp_path / ".env.local").read_text(encoding="utf-8")
+    assert "provider: openai-chat" in profile
+    assert "model: deepseek-v4-pro" in profile
+    assert "api_base: https://api.deepseek.com" in profile
+    assert "api_key_env: DEEPSEEK_API_KEY" in profile
+    assert "DEEPSEEK_API_KEY=deepseek-key" in env
+
+
+def test_list_model_presets_includes_popular_provider_shortcuts():
+    names = {row["name"] for row in list_model_presets()}
+
+    assert {"claude-opus", "deepseek", "gemini", "minimax", "openrouter"}.issubset(names)
+
+
+def test_default_model_profile_prefers_local_config(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    assert resolve_default_model_profile(None) == "models/gpt-5.5-xhigh.yaml"
+
+    (tmp_path / ".gobench").mkdir()
+    (tmp_path / ".gobench/model.yaml").write_text("model: gpt-test\n", encoding="utf-8")
+
+    assert resolve_default_model_profile(None) == ".gobench/model.yaml"
+    assert resolve_default_model_profile("models/custom.yaml") == "models/custom.yaml"
+
+
+def test_request_openai_chat_move_uses_profile_base_url_and_key():
+    calls = []
+
+    class FakeResponse:
+        status_code = 200
+        text = ""
+
+        def json(self):
+            return {
+                "id": "chatcmpl-test",
+                "choices": [{"message": {"content": '{"move":"D4"}'}, "finish_reason": "stop"}],
+                "usage": {"total_tokens": 5},
+            }
+
+    class FakeClient:
+        def post(self, url, headers, json):
+            calls.append((url, headers, json))
+            return FakeResponse()
+
+    profile = ModelProfile(
+        path=Path("model.yaml"),
+        name="deepseek",
+        provider="openai-chat",
+        model="deepseek-v4-pro",
+        reasoning_effort="high",
+        temperature=None,
+        max_output_tokens=2000,
+        prompt_template="prompt.txt",
+        api_key_env="DEEPSEEK_API_KEY",
+        api_base="https://api.deepseek.com",
+    )
+
+    text, response_id, status, usage = request_openai_chat_move(
+        FakeClient(),
+        "secret",
+        profile,
+        "Return JSON.",
+        Position(position_id="dev_000001", to_move="B"),
+    )
+
+    assert text == '{"move":"D4"}'
+    assert response_id == "chatcmpl-test"
+    assert status == "completed"
+    assert usage == {"total_tokens": 5}
+    url, headers, payload = calls[0]
+    assert url == "https://api.deepseek.com/chat/completions"
+    assert headers["Authorization"] == "Bearer secret"
+    assert payload["model"] == "deepseek-v4-pro"
+    assert payload["reasoning_effort"] == "high"
+
+
+def test_extract_anthropic_text_joins_text_blocks():
+    assert extract_anthropic_text({"content": [{"type": "text", "text": '{"move":"Q16"}'}]}) == '{"move":"Q16"}'
 
 
 def test_progress_line_is_human_readable():

@@ -1,28 +1,220 @@
 # GoBench
 
-GoBench v0.1 is a static next-move benchmark prototype for 19x19 Go. Models receive board positions and submit one legal move. The primary score is mean KataGo point-loss regret relative to KataGo's best move.
+Can today's AI models actually reason about Go, or are they just fluent about Go?
+
+GoBench is a compact benchmark for evaluating both the **generalization** and
+**reasoning** abilities of AI models on 19x19 Go. A model receives a board
+position in text, with no Go engine and no external tools, and must return one
+legal next move. GoBench then scores the move by its point-loss regret relative
+to KataGo's best move.
+
+Go is an unusually sharp testbed for intelligence: the rules are simple, the
+state space is enormous, local tactics interact with global judgment, and a
+plausible-looking move can still lose the game by many points. A genuinely
+superintelligent model should eventually be able to play Go from its own
+reasoning, without calling tools, on par with systems such as KataGo. GoBench is
+a small open step toward measuring that gap.
+
+GoBench v0.1 is intentionally focused: static next-move prediction, pure text
+input, legal move parsing, and KataGo-based point-loss scoring. It is designed
+to be easy to run locally, hard to hand-wave, and honest about what is and is
+not being measured.
+
+![GoBench visualization preview](docs/gobench-visualization.png)
+
+## Reading the Preview
+
+- **GoBench Score:** a 0-100 display score derived from mean point loss. Higher
+  is better.
+- **Mean Point Loss / MPL:** average points lost by the model's move compared
+  with KataGo's preferred move. Lower is better.
+- **Legal Moves:** fraction of model outputs that parse as legal Go moves.
+- **Top-3 Match:** fraction of model moves that appear in KataGo's top three
+  candidate moves for the position.
+- **Blunder Rate:** fraction of moves whose point loss crosses the configured
+  blunder threshold.
+- **KataGo rank:** yellow numbered markers show KataGo's highest-ranked
+  candidate moves on the board.
+- **Model move:** the blue ring marks the move submitted by the evaluated
+  model.
+- **Black / White:** existing stones on the board before the model's move.
+- **Public-dev:** the open development suite for debugging prompts, formatting,
+  legality, scoring, and visualization. It is not an official leaderboard
+  claim.
+
+## What GoBench Measures
+
+- **Board understanding:** can the model parse and reason from a raw 19x19
+  position?
+- **Legal move discipline:** can it reliably produce valid Go coordinates?
+- **Strategic judgment:** how many points does its move lose relative to
+  KataGo's preferred move?
+- **Robustness across phases:** opening, middle-game, and endgame positions are
+  reported separately.
+- **Benchmark hygiene:** public-dev data is open for debugging, while official
+  leaderboard-style evaluation should use hidden positions and fixed scorer
+  settings.
 
 This prototype is intentionally small. It does not implement full-game play, Elo, image input, explanation grading, tool-assisted tracks, other board sizes, handicap games, or human expert review.
 
 For the benchmark governance model, official scorer settings, and anti-contamination policy, see `BENCHMARK.md`.
 
-## Install
+## Quick Start
+
+Install GoBench in an isolated environment:
 
 ```bash
-git clone https://github.com/richren/GoBench.git
-cd GoBench/gobench
-python -m venv .venv
-. .venv/bin/activate
-pip install -e ".[dev]"
+git clone https://github.com/GoBenchmark/GoBench.git
+cd GoBench
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 ```
 
-## Test
+Run the test suite:
 
 ```bash
-pytest
+python -m pytest
 ```
 
-## Profile-Based Benchmark Workflow
+Run a no-network smoke test against the bundled public-dev examples:
+
+```bash
+python -m gobench.cli eval-file \
+  --positions data/public_dev/positions.jsonl \
+  --predictions data/public_dev/example_predictions.jsonl \
+  --labels data/public_dev/labels.jsonl
+```
+
+That command uses the checked-in example predictions and labels, so it works
+without an OpenAI key or KataGo install. It is the fastest way to confirm that
+the CLI, parser, legality checks, and metrics pipeline are working.
+
+List the model and suite profiles:
+
+```bash
+python -m gobench.cli list-models
+python -m gobench.cli list-suites
+```
+
+Diagnose your local setup:
+
+```bash
+python -m gobench.cli doctor
+```
+
+`doctor` reports whether your API key, output directory, and KataGo settings are
+ready. It exits nonzero when required real-scoring pieces are missing. Missing
+KataGo is fine for the no-network smoke test above; real benchmark claims
+should use KataGo scoring.
+
+## Run a Model
+
+Official leaderboard submissions are API-only. Use direct provider APIs or
+compatible API gateways through GoBench model profiles; `codex_exec`, private
+Codex runners, shell-based agent loops, browser/computer-use automation, and
+other tool-using runtimes are not accepted as official results.
+
+Configure your local model profile and API key once:
+
+```bash
+python -m gobench.cli configure \
+  --model gpt-5.5 \
+  --reasoning-effort xhigh \
+  --api-key "$OPENAI_API_KEY"
+```
+
+Or start from a built-in provider preset:
+
+```bash
+python -m gobench.cli list-presets
+
+# OpenAI Responses API
+python -m gobench.cli configure --preset openai --api-key "$OPENAI_API_KEY"
+
+# Anthropic Messages API
+python -m gobench.cli configure --preset claude-opus --api-key "$ANTHROPIC_API_KEY"
+
+# OpenAI-compatible chat APIs
+python -m gobench.cli configure --preset deepseek --api-key "$DEEPSEEK_API_KEY"
+python -m gobench.cli configure --preset gemini --api-key "$GEMINI_API_KEY"
+
+# MiniMax and broad model catalogs through OpenRouter
+python -m gobench.cli configure --preset minimax --api-key "$OPENROUTER_API_KEY"
+python -m gobench.cli configure --preset openrouter \
+  --model anthropic/claude-opus-4.8 \
+  --api-key "$OPENROUTER_API_KEY"
+```
+
+Presets are intentionally thin: they fill in `provider`, `model`,
+`api_key_env`, and when needed `api_base`. You can still override the model id
+with `--model` or use any OpenAI-compatible endpoint:
+
+```bash
+python -m gobench.cli configure \
+  --provider openai-chat \
+  --model provider/model-id \
+  --api-base https://provider.example.com/v1 \
+  --api-key-env PROVIDER_API_KEY \
+  --api-key "$PROVIDER_API_KEY"
+```
+
+This writes two local files that are ignored by Git:
+
+- `.gobench/model.yaml`: your default model profile.
+- `.env.local`: your API/scorer environment settings.
+
+After that, GoBench automatically uses `.gobench/model.yaml` when
+`--model-profile` is omitted.
+
+If you only want to test model calling and save predictions before configuring
+KataGo, run generation by itself:
+
+```bash
+python -m gobench.cli generate \
+  --suite suites/public_dev.yaml \
+  --out data/runs/my-model-public-dev
+```
+
+For benchmark-style scored results, configure KataGo too:
+
+```bash
+python -m gobench.cli configure --force \
+  --model gpt-5.5 \
+  --reasoning-effort xhigh \
+  --api-key "$OPENAI_API_KEY" \
+  --scorer katago \
+  --katago-bin /path/to/katago \
+  --katago-model /path/to/model.bin.gz \
+  --katago-config configs/katago_gobench_official.cfg
+```
+
+Then check your setup:
+
+```bash
+python -m gobench.cli doctor
+```
+
+Run generate + score + report in one command:
+
+```bash
+python -m gobench.cli run \
+  --suite suites/public_dev.yaml \
+  --out data/runs/my-model-public-dev
+```
+
+After a successful `run`, GoBench writes `visualization/index.html` and opens it
+in your browser by default. Use `--no-open` to write the HTML without opening a
+browser, or `--no-visualize` to skip visualization entirely.
+
+Build a local leaderboard from saved runs:
+
+```bash
+python -m gobench.cli leaderboard data/runs
+```
+
+## Profile-Based Workflow
 
 GoBench supports benchmark-style model and suite profiles:
 
@@ -47,27 +239,7 @@ python -m gobench.cli list-models
 python -m gobench.cli list-suites
 ```
 
-Check local setup:
-
-```bash
-python -m gobench.cli doctor \
-  --model-profile models/gpt-5.5-xhigh.yaml \
-  --suite suites/public_dev.yaml
-```
-
-Run generate + score + report in one command:
-
-```bash
-python -m gobench.cli run \
-  --model-profile models/gpt-5.5-xhigh.yaml \
-  --suite suites/public_dev.yaml \
-  --out data/runs/gpt-5.5-xhigh-public-dev \
-  --open
-```
-
-`--open` generates `visualization/index.html` after scoring and opens it in the
-browser. Use `--visualize` instead if you want the HTML file written without
-opening a browser. The final JSON prints both `visualization` and
+The final JSON prints both `visualization` and
 `visualization_url` so the HTML can be reopened later. `--visualize-top-k`
 controls how many KataGo candidate moves are shown.
 
@@ -309,31 +481,56 @@ python -m gobench.cli leaderboard data/runs
 
 ## Real KataGo Scoring
 
-Mock scoring is the default and is not real benchmark scoring. It exists so the API, CLI, metrics, and tests run without KataGo installed.
+Mock scoring is the default and is not real benchmark scoring. It exists so the
+API, CLI, metrics, and tests run without KataGo installed.
 
-Real KataGo mode uses KataGo's JSON analysis engine:
+For real scoring, install KataGo separately, download or locate a KataGo model,
+then point GoBench at the binary, model, and fixed analysis config. On
+macOS/Homebrew, `KATAGO_BIN` is often `/opt/homebrew/bin/katago`; the model is
+usually under Homebrew's KataGo share directory.
 
 ```bash
-KATAGO_BIN=/path/to/katago
-KATAGO_MODEL=/path/to/model.bin.gz
-KATAGO_CONFIG=configs/katago_gobench_official.cfg
-GOBENCH_SCORER=katago
-KATAGO_MAX_VISITS=2048
-KATAGO_ANALYSIS_PV_LEN=12
-KATAGO_REPORT_ANALYSIS_AS=SIDETOMOVE
-GOBENCH_DB=./data/gobench.sqlite
+export GOBENCH_SCORER=katago
+export KATAGO_BIN=/path/to/katago
+export KATAGO_MODEL=/path/to/model.bin.gz
+export KATAGO_CONFIG=configs/katago_gobench_official.cfg
+export KATAGO_MAX_VISITS=2048
+export KATAGO_ANALYSIS_PV_LEN=12
+export KATAGO_REPORT_ANALYSIS_AS=SIDETOMOVE
+export GOBENCH_DB=./data/gobench.sqlite
 ```
 
-Then run, for example:
+You can also put those values in `.env.local`; profile-based commands load that
+file automatically.
+
+Verify the setup:
 
 ```bash
-GOBENCH_SCORER=katago python -m gobench.cli precompute-labels \
+python -m gobench.cli doctor \
+  --model-profile models/gpt-5.5-xhigh.yaml \
+  --suite suites/public_dev.yaml
+```
+
+Then run the public-dev suite with real KataGo scoring:
+
+```bash
+python -m gobench.cli run \
+  --model-profile models/gpt-5.5-xhigh.yaml \
+  --suite suites/public_dev.yaml \
+  --out data/runs/gpt-5.5-xhigh-public-dev-katago
+```
+
+Or precompute labels and evaluate a predictions file:
+
+```bash
+python -m gobench.cli precompute-labels \
   --positions data/public_dev/positions.jsonl \
   --out data/labels/public_katago_labels.jsonl
 
-GOBENCH_SCORER=katago python -m gobench.cli eval-file \
+python -m gobench.cli eval-file \
   --positions data/public_dev/positions.jsonl \
-  --predictions data/public_dev/example_predictions.jsonl
+  --predictions data/public_dev/example_predictions.jsonl \
+  --labels data/labels/public_katago_labels.jsonl
 ```
 
 `KataGoAnalysisClient` launches:
@@ -353,6 +550,8 @@ For leaderboard-style local scoring, prefer `configs/katago_gobench_official.cfg
 Before treating a run as a benchmark result:
 
 - Run `python -m gobench.cli doctor --model-profile ... --suite ...`.
+- Generate moves through a documented model API profile, not `codex_exec`,
+  private Codex runners, shell agents, or tool-using automation.
 - Use a versioned suite profile such as `suites/public_dev.yaml`.
 - Use real KataGo scoring, not the mock scorer.
 - Prefer `configs/katago_gobench_official.cfg` for reproducibility.

@@ -89,8 +89,8 @@ def render_markdown_report(summary: dict[str, Any]) -> str:
         "",
         "| Metric | Value |",
         "|---|---:|",
-        f"| GoBench Score | {format_number(metrics.get('gobench_score'))} / 100 |",
-        f"| Mean Point Loss | {format_number(metrics.get('mean_point_loss'))} |",
+        f"| GoBench Score | {format_metric_number(metrics.get('gobench_score'))} / 100 |",
+        f"| Mean Point Loss | {format_metric_number(metrics.get('mean_point_loss'))} |",
         f"| Legal Move Rate | {format_percent(metrics.get('legal_move_rate'))} |",
         f"| Top-1 Match | {format_percent(metrics.get('top1_match_rate'))} |",
         f"| Top-3 Match | {format_percent(metrics.get('top3_match_rate'))} |",
@@ -106,7 +106,7 @@ def render_markdown_report(summary: dict[str, Any]) -> str:
     if phase_mpl:
         lines.extend(["## Phase MPL", "", "| Phase | MPL |", "|---|---:|"])
         for phase, mpl in sorted(phase_mpl.items()):
-            lines.append(f"| {phase} | {format_number(mpl)} |")
+            lines.append(f"| {phase} | {format_metric_number(mpl)} |")
         lines.append("")
 
     if run.get("response_count") is not None:
@@ -202,8 +202,8 @@ def render_leaderboard(summaries: list[dict[str, Any]]) -> str:
                 run_name=run_name,
                 model=run.get("model", "unknown"),
                 suite=run.get("suite", "unknown"),
-                score=format_number(metrics.get("gobench_score")),
-                mpl=format_number(metrics.get("mean_point_loss")),
+                score=format_metric_number(metrics.get("gobench_score")),
+                mpl=format_metric_number(metrics.get("mean_point_loss")),
                 legal=format_percent(metrics.get("legal_move_rate")),
                 top3=format_percent(metrics.get("top3_match_rate")),
                 blunder=format_percent(metrics.get("blunder_rate")),
@@ -218,6 +218,12 @@ def render_leaderboard(summaries: list[dict[str, Any]]) -> str:
 def format_number(value: Any) -> str:
     if isinstance(value, (int, float)):
         return f"{value:.3f}".rstrip("0").rstrip(".")
+    return "n/a"
+
+
+def format_metric_number(value: Any) -> str:
+    if isinstance(value, (int, float)):
+        return f"{value:.2f}".rstrip("0").rstrip(".")
     return "n/a"
 
 

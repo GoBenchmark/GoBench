@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from gobench.api.schemas import MoveSubmission, ScoreResult
-from gobench.cli import html_url, maybe_add_run_visualization
+from gobench.cli import html_url, maybe_add_run_visualization, maybe_add_successful_run_visualization
 from gobench.datasets.loader import write_jsonl
 from gobench.datasets.sample_data import make_toy_positions
 from gobench.profiles import SuiteProfile
@@ -32,7 +32,7 @@ def test_write_run_visualization_creates_html_and_candidate_cache(tmp_path, monk
         encoding="utf-8",
     )
     (run_dir / "metrics.json").write_text(
-        json.dumps({"metrics": {"gobench_score": 90.0, "mean_point_loss": 0.2, "count": 2}}),
+        json.dumps({"metrics": {"gobench_score": 90.126, "mean_point_loss": 0.234, "count": 2}}),
         encoding="utf-8",
     )
     write_jsonl(
@@ -98,6 +98,8 @@ def test_write_run_visualization_creates_html_and_candidate_cache(tmp_path, monk
     assert "model-marker" in page
     assert "status-badge" in page
     assert "status-completed" in page
+    assert "<strong>90.13</strong>" in page
+    assert "<strong>0.23</strong>" in page
     assert "Scoring complete 2/2" in page
     assert "completion-complete" in page
     assert "00:03:21" in page
@@ -250,6 +252,27 @@ def test_maybe_add_run_visualization_updates_summary(tmp_path, monkeypatch):
     assert summary["visualization"] == str(run_dir / "visualization" / "index.html")
     assert summary["visualization_url"] == (run_dir / "visualization" / "index.html").resolve().as_uri()
     assert (run_dir / "visualization" / "index.html").exists()
+
+
+def test_successful_run_visualization_skips_incomplete_summary(tmp_path, monkeypatch):
+    def fail_write(*args, **kwargs):
+        raise AssertionError("incomplete runs should not generate default visualizations")
+
+    monkeypatch.setattr("gobench.cli.write_run_visualization", fail_write)
+    summary = {"completed": False}
+    suite = SuiteProfile(tmp_path / "suite.yaml", "suite", "positions.jsonl", 1, "mock", None, None)
+
+    maybe_add_successful_run_visualization(
+        summary,
+        tmp_path / "run",
+        suite,
+        visualize=True,
+        open_browser=True,
+        top_k=2,
+        refresh_candidates=False,
+    )
+
+    assert summary == {"completed": False}
 
 
 def test_html_url_is_absolute_file_url(tmp_path):

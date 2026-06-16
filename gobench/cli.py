@@ -16,6 +16,7 @@ from typing import Any
 
 import httpx
 import uvicorn
+import yaml
 
 from gobench import __version__
 from gobench.api.schemas import CandidateEval, MoveSubmission, Position, ScoreResult
@@ -46,6 +47,50 @@ from gobench.reporting import (
 from gobench.visualization import suite_from_run, write_run_visualization
 
 DEFAULT_PROMPT_TEMPLATE = "prompts/pure_llm_json_v1.txt"
+DEFAULT_BUILTIN_MODEL_PROFILE = "models/gpt-5.5-xhigh.yaml"
+DEFAULT_LOCAL_MODEL_PROFILE = ".gobench/model.yaml"
+DEFAULT_ENV_FILE = ".env.local"
+
+MODEL_PRESETS: dict[str, dict[str, Any]] = {
+    "openai": {
+        "provider": "openai",
+        "model": "gpt-5.5",
+        "reasoning_effort": "xhigh",
+        "api_key_env": "OPENAI_API_KEY",
+    },
+    "claude-opus": {
+        "provider": "anthropic",
+        "model": "claude-opus-4-8",
+        "api_key_env": "ANTHROPIC_API_KEY",
+        "api_base": "https://api.anthropic.com",
+    },
+    "deepseek": {
+        "provider": "openai-chat",
+        "model": "deepseek-v4-pro",
+        "reasoning_effort": "high",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "api_base": "https://api.deepseek.com",
+    },
+    "gemini": {
+        "provider": "openai-chat",
+        "model": "gemini-3.5-flash",
+        "reasoning_effort": "high",
+        "api_key_env": "GEMINI_API_KEY",
+        "api_base": "https://generativelanguage.googleapis.com/v1beta/openai",
+    },
+    "openrouter": {
+        "provider": "openai-chat",
+        "model": "~openai/gpt-latest",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "api_base": "https://openrouter.ai/api/v1",
+    },
+    "minimax": {
+        "provider": "openai-chat",
+        "model": "minimax/minimax-m3",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "api_base": "https://openrouter.ai/api/v1",
+    },
+}
 
 
 def main() -> None:
@@ -86,10 +131,40 @@ def main() -> None:
     precompute_parser.add_argument("--positions", required=True)
     precompute_parser.add_argument("--out", required=True)
 
+    subparsers.add_parser("list-presets", help="list built-in model provider presets")
+
+    configure_parser = subparsers.add_parser(
+        "configure",
+        help="write a local model profile and .env.local for easier runs",
+    )
+    configure_parser.add_argument("--preset", choices=sorted(MODEL_PRESETS), help="provider/model preset")
+    configure_parser.add_argument("--provider", choices=["openai", "anthropic", "openai-chat"], help="model provider")
+    configure_parser.add_argument("--model", help="model id sent to the provider API")
+    configure_parser.add_argument("--api-key-env", help="environment variable that stores the API key")
+    configure_parser.add_argument("--api-base", help="base URL for Anthropic or OpenAI-compatible APIs")
+    configure_parser.add_argument("--reasoning-effort", help="reasoning effort when the provider supports it")
+    configure_parser.add_argument("--temperature", type=float, help="optional sampling temperature")
+    configure_parser.add_argument("--max-output-tokens", type=int, help="maximum response tokens")
+    configure_parser.add_argument("--prompt-template", default=DEFAULT_PROMPT_TEMPLATE, help="prompt template path")
+    configure_parser.add_argument("--api-key", help="API key to save in the local env file")
+    configure_parser.add_argument("--scorer", choices=["mock", "katago"], default="mock", help="local scorer env default")
+    configure_parser.add_argument("--katago-bin", help="path to the KataGo binary for real scoring")
+    configure_parser.add_argument("--katago-model", help="path to the KataGo model for real scoring")
+    configure_parser.add_argument(
+        "--katago-config",
+        default="configs/katago_gobench_official.cfg",
+        help="KataGo analysis config path",
+    )
+    configure_parser.add_argument("--katago-max-visits", type=int, default=2048, help="KataGo visits per position")
+    configure_parser.add_argument("--katago-analysis-pv-len", type=int, default=12, help="KataGo PV length")
+    configure_parser.add_argument("--profile-path", default=DEFAULT_LOCAL_MODEL_PROFILE, help="local profile path")
+    configure_parser.add_argument("--env-file", default=DEFAULT_ENV_FILE, help="local env file path")
+    configure_parser.add_argument("--force", action="store_true", help="overwrite an existing local profile")
+
     doctor_parser = subparsers.add_parser("doctor")
-    doctor_parser.add_argument("--model-profile", default="models/gpt-5.5-xhigh.yaml")
+    doctor_parser.add_argument("--model-profile")
     doctor_parser.add_argument("--suite", default="suites/public_dev.yaml")
-    doctor_parser.add_argument("--env-file", default=".env.local")
+    doctor_parser.add_argument("--env-file", default=DEFAULT_ENV_FILE)
 
     release_parser = subparsers.add_parser("release-check")
     release_parser.add_argument("--public-suite", default="suites/public_dev.yaml")
@@ -126,7 +201,7 @@ def main() -> None:
     add_profile_run_parser(run_parser)
     run_parser.add_argument("--continue-existing", action="store_true")
     add_retry_errors_parser(run_parser)
-    add_run_visualization_parser(run_parser)
+    add_run_visualization_parser(run_parser, default_visualize=True, default_open=True)
 
     run_openai_parser = subparsers.add_parser("run-openai")
     add_model_run_parser(run_openai_parser)
@@ -169,6 +244,30 @@ def main() -> None:
             )
         elif args.command == "precompute-labels":
             cmd_precompute_labels(args.positions, args.out)
+        elif args.command == "list-presets":
+            print(json.dumps(list_model_presets(), indent=2, sort_keys=True))
+        elif args.command == "configure":
+            cmd_configure(
+                preset=args.preset,
+                provider=args.provider,
+                model=args.model,
+                api_key_env=args.api_key_env,
+                api_base=args.api_base,
+                reasoning_effort=args.reasoning_effort,
+                temperature=args.temperature,
+                max_output_tokens=args.max_output_tokens,
+                prompt_template=args.prompt_template,
+                api_key=args.api_key,
+                scorer=args.scorer,
+                katago_bin=args.katago_bin,
+                katago_model=args.katago_model,
+                katago_config=args.katago_config,
+                katago_max_visits=args.katago_max_visits,
+                katago_analysis_pv_len=args.katago_analysis_pv_len,
+                profile_path=args.profile_path,
+                env_file=args.env_file,
+                force=args.force,
+            )
         elif args.command == "doctor":
             cmd_doctor(args.model_profile, args.suite, args.env_file)
         elif args.command == "release-check":
@@ -235,10 +334,10 @@ def main() -> None:
 
 
 def add_profile_run_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--model-profile", default="models/gpt-5.5-xhigh.yaml")
+    parser.add_argument("--model-profile")
     parser.add_argument("--suite", default="suites/public_dev.yaml")
     parser.add_argument("--out")
-    parser.add_argument("--env-file", default=".env.local")
+    parser.add_argument("--env-file", default=DEFAULT_ENV_FILE)
 
 
 def add_model_run_parser(parser: argparse.ArgumentParser) -> None:
@@ -270,9 +369,56 @@ def add_retry_errors_parser(parser: argparse.ArgumentParser) -> None:
     )
 
 
-def add_run_visualization_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--visualize", action="store_true")
-    parser.add_argument("--open", action="store_true", help="Open visualization after the run; implies --visualize")
+class DisableVisualizationAction(argparse.Action):
+    def __init__(self, option_strings: list[str], dest: str, **kwargs: Any) -> None:
+        super().__init__(option_strings=option_strings, dest=dest, nargs=0, **kwargs)
+
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | None,
+        option_string: str | None = None,
+    ) -> None:
+        setattr(namespace, self.dest, False)
+        setattr(namespace, "open", False)
+
+
+class OpenVisualizationAction(argparse.Action):
+    def __init__(self, option_strings: list[str], dest: str, **kwargs: Any) -> None:
+        super().__init__(option_strings=option_strings, dest=dest, nargs=0, **kwargs)
+
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | None,
+        option_string: str | None = None,
+    ) -> None:
+        setattr(namespace, self.dest, True)
+        setattr(namespace, "visualize", True)
+
+
+def add_run_visualization_parser(
+    parser: argparse.ArgumentParser,
+    default_visualize: bool = False,
+    default_open: bool = False,
+) -> None:
+    parser.set_defaults(visualize=default_visualize, open=default_open)
+    parser.add_argument("--visualize", dest="visualize", action="store_true", help="Write visualization after the run")
+    parser.add_argument(
+        "--no-visualize",
+        dest="visualize",
+        action=DisableVisualizationAction,
+        help="Do not write or open visualization after the run",
+    )
+    parser.add_argument(
+        "--open",
+        dest="open",
+        action=OpenVisualizationAction,
+        help="Open visualization after the run; implies --visualize",
+    )
+    parser.add_argument("--no-open", dest="open", action="store_false", help="Write visualization without opening a browser")
     parser.add_argument("--visualize-top-k", type=int, default=5)
     parser.add_argument("--refresh-candidates", action="store_true")
 
@@ -460,7 +606,151 @@ def cmd_precompute_labels(positions_path: str, out: str) -> None:
     print(json.dumps({"positions": len(rows), "candidates": candidate_count, "out": out}, indent=2))
 
 
-def cmd_doctor(model_profile_path: str, suite_path: str, env_file: str) -> None:
+def cmd_configure(
+    preset: str | None,
+    provider: str | None,
+    model: str | None,
+    api_key_env: str | None,
+    api_base: str | None,
+    reasoning_effort: str | None,
+    temperature: float | None,
+    max_output_tokens: int | None,
+    prompt_template: str,
+    api_key: str | None,
+    scorer: str,
+    katago_bin: str | None,
+    katago_model: str | None,
+    katago_config: str,
+    katago_max_visits: int,
+    katago_analysis_pv_len: int,
+    profile_path: str,
+    env_file: str,
+    force: bool,
+) -> None:
+    preset_values = dict(MODEL_PRESETS.get(preset or "openai", {}))
+    provider = provider or preset_values.get("provider") or "openai"
+    model = model or preset_values.get("model") or "gpt-5.5"
+    api_key_env = api_key_env or preset_values.get("api_key_env") or default_api_key_env(provider)
+    api_base = api_base or preset_values.get("api_base")
+    reasoning_effort = reasoning_effort if reasoning_effort is not None else preset_values.get("reasoning_effort")
+    max_output_tokens = max_output_tokens or 20000
+
+    profile = Path(profile_path)
+    if profile.exists() and not force:
+        raise SystemExit(f"{profile} already exists; pass --force to overwrite it")
+    if max_output_tokens < 1:
+        raise SystemExit("--max-output-tokens must be >= 1")
+    if katago_max_visits < 1:
+        raise SystemExit("--katago-max-visits must be >= 1")
+    if katago_analysis_pv_len < 1:
+        raise SystemExit("--katago-analysis-pv-len must be >= 1")
+
+    profile.parent.mkdir(parents=True, exist_ok=True)
+    profile_data: dict[str, Any] = {
+        "name": profile.stem,
+        "provider": provider,
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "temperature": temperature,
+        "max_output_tokens": max_output_tokens,
+        "prompt_template": prompt_template,
+        "api_key_env": api_key_env,
+    }
+    if api_base:
+        profile_data["api_base"] = api_base
+    profile.write_text(yaml.safe_dump(profile_data, sort_keys=False), encoding="utf-8")
+
+    env_updates = {
+        "GOBENCH_SCORER": scorer,
+        "GOBENCH_DB": "./data/gobench.sqlite",
+    }
+    if api_key:
+        env_updates[api_key_env] = api_key
+    if scorer == "katago":
+        if katago_bin:
+            env_updates["KATAGO_BIN"] = katago_bin
+        if katago_model:
+            env_updates["KATAGO_MODEL"] = katago_model
+        env_updates["KATAGO_CONFIG"] = katago_config
+        env_updates["KATAGO_MAX_VISITS"] = str(katago_max_visits)
+        env_updates["KATAGO_ANALYSIS_PV_LEN"] = str(katago_analysis_pv_len)
+        env_updates["KATAGO_REPORT_ANALYSIS_AS"] = "SIDETOMOVE"
+    write_env_updates(Path(env_file), env_updates)
+
+    next_steps = [
+        "python -m gobench.cli generate --suite suites/public_dev.yaml --out data/runs/my-model-public-dev",
+    ]
+    if scorer == "katago":
+        next_steps = [
+            "python -m gobench.cli doctor",
+            "python -m gobench.cli run --suite suites/public_dev.yaml --out data/runs/my-model-public-dev",
+        ]
+    else:
+        next_steps.append(
+            "for scored benchmark results, rerun configure with --force --scorer katago --katago-bin ... --katago-model ..."
+        )
+
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "model_profile": str(profile),
+                "env_file": env_file,
+                "preset": preset or "openai",
+                "provider": provider,
+                "model": model,
+                "api_key_env": api_key_env,
+                "api_key": "written" if api_key else "unchanged",
+                "scorer": scorer,
+                "next_steps": next_steps,
+            },
+            indent=2,
+        )
+    )
+
+
+def list_model_presets() -> list[dict[str, Any]]:
+    return [{"name": name, **values} for name, values in sorted(MODEL_PRESETS.items())]
+
+
+def default_api_key_env(provider: str) -> str:
+    return {
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "openai-chat": "OPENAI_API_KEY",
+    }.get(provider, "OPENAI_API_KEY")
+
+
+def resolve_default_model_profile(value: str | None) -> str:
+    if value:
+        return value
+    local = Path(DEFAULT_LOCAL_MODEL_PROFILE)
+    if local.exists():
+        return str(local)
+    return DEFAULT_BUILTIN_MODEL_PROFILE
+
+
+def write_env_updates(path: Path, updates: dict[str, str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existing_lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    remaining = dict(updates)
+    new_lines: list[str] = []
+    for line in existing_lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            new_lines.append(line)
+            continue
+        key = stripped.split("=", 1)[0].strip()
+        if key in remaining:
+            new_lines.append(f"{key}={remaining.pop(key)}")
+        else:
+            new_lines.append(line)
+    for key, value in remaining.items():
+        new_lines.append(f"{key}={value}")
+    path.write_text("\n".join(new_lines).rstrip() + "\n", encoding="utf-8")
+
+
+def cmd_doctor(model_profile_path: str | None, suite_path: str, env_file: str) -> None:
     load_env_file(env_file)
     checks: list[dict[str, Any]] = []
 
@@ -468,7 +758,7 @@ def cmd_doctor(model_profile_path: str, suite_path: str, env_file: str) -> None:
         checks.append({"name": name, "ok": ok, "detail": detail})
 
     try:
-        model_profile = load_model_profile(model_profile_path)
+        model_profile = load_model_profile(resolve_default_model_profile(model_profile_path))
         add("model_profile", True, str(model_profile.path))
     except Exception as exc:
         model_profile = None
@@ -483,7 +773,11 @@ def cmd_doctor(model_profile_path: str, suite_path: str, env_file: str) -> None:
         suite = None
         add("suite", False, str(exc))
 
-    add("openai_api_key", bool(os.getenv("OPENAI_API_KEY")), "present" if os.getenv("OPENAI_API_KEY") else "missing")
+    if model_profile:
+        key_env = model_profile.api_key_env or default_api_key_env(model_profile.provider)
+        add("api_key", bool(os.getenv(key_env)), f"{key_env}: {'present' if os.getenv(key_env) else 'missing'}")
+        if model_profile.provider in {"anthropic", "openai-chat"}:
+            add("api_base", bool(model_profile.api_base), model_profile.api_base)
 
     if suite and suite.scorer.startswith("katago"):
         apply_suite_environment(suite)
@@ -614,7 +908,7 @@ def path_matches_gitignore(path: Path, gitignore_path: Path) -> bool:
 
 
 def cmd_generate(
-    model_profile_path: str,
+    model_profile_path: str | None,
     suite_path: str,
     out: str | None,
     env_file: str,
@@ -622,7 +916,7 @@ def cmd_generate(
     retry_errors: bool,
 ) -> None:
     load_env_file(env_file)
-    model_profile = load_model_profile(model_profile_path)
+    model_profile = load_model_profile(resolve_default_model_profile(model_profile_path))
     suite = load_suite_profile(suite_path)
     out_dir = Path(out) if out else default_run_dir(model_profile, suite)
     generate_from_profile(model_profile, suite, out_dir, continue_existing, retry_errors)
@@ -696,6 +990,20 @@ def maybe_add_run_visualization(
     )
     summary["visualization"] = str(html_path)
     summary["visualization_url"] = html_url(html_path)
+
+
+def maybe_add_successful_run_visualization(
+    summary: dict[str, Any],
+    out_dir: Path,
+    suite: SuiteProfile,
+    visualize: bool,
+    open_browser: bool,
+    top_k: int,
+    refresh_candidates: bool,
+) -> None:
+    if not summary.get("completed"):
+        return
+    maybe_add_run_visualization(summary, out_dir, suite, visualize, open_browser, top_k, refresh_candidates)
 
 
 def html_url(path: Path) -> str:
@@ -916,7 +1224,7 @@ def finalize_score_results(out_dir: Path, results: list[ScoreResult]) -> None:
 
 
 def cmd_run_profile(
-    model_profile_path: str,
+    model_profile_path: str | None,
     suite_path: str,
     out: str | None,
     env_file: str,
@@ -928,14 +1236,22 @@ def cmd_run_profile(
     refresh_candidates: bool,
 ) -> None:
     load_env_file(env_file)
-    model_profile = load_model_profile(model_profile_path)
+    model_profile = load_model_profile(resolve_default_model_profile(model_profile_path))
     suite = load_suite_profile(suite_path)
     out_dir = Path(out) if out else default_run_dir(model_profile, suite)
     with LiveTimer("run", out_dir) as timer:
         generation_error = generate_from_profile(model_profile, suite, out_dir, continue_existing, retry_errors)
         summary = score_predictions_for_suite(suite, out_dir / "predictions.jsonl", out_dir, generation_error)
         finalize_run_elapsed(summary, out_dir, timer.started_at)
-        maybe_add_run_visualization(summary, out_dir, suite, visualize, open_browser, visualize_top_k, refresh_candidates)
+        maybe_add_successful_run_visualization(
+            summary,
+            out_dir,
+            suite,
+            visualize,
+            open_browser,
+            visualize_top_k,
+            refresh_candidates,
+        )
         write_summary_files(summary, out_dir)
     print(json.dumps(summary, indent=2, sort_keys=True))
 
@@ -1117,11 +1433,12 @@ def generate_from_profile(
     continue_existing: bool,
     retry_errors: bool = True,
 ) -> str | None:
-    if model_profile.provider != "openai":
+    if model_profile.provider not in {"openai", "anthropic", "openai-chat"}:
         raise SystemExit(f"unsupported provider for generate: {model_profile.provider}")
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key_env = model_profile.api_key_env or default_api_key_env(model_profile.provider)
+    api_key = os.getenv(api_key_env)
     if not api_key:
-        raise SystemExit("OPENAI_API_KEY is not set")
+        raise SystemExit(f"{api_key_env} is not set")
 
     positions = load_suite_positions(suite)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1180,13 +1497,10 @@ def generate_from_profile(
             for position in pending_positions:
                 started = time.time()
                 try:
-                    text, response_id, status, usage = request_openai_move(
+                    text, response_id, status, usage = request_model_move(
                         client,
+                        model_profile,
                         api_key,
-                        model_profile.model,
-                        model_profile.reasoning_effort or "",
-                        model_profile.temperature,
-                        model_profile.max_output_tokens,
                         system_prompt,
                         position,
                     )
@@ -1377,6 +1691,31 @@ def prefix_keys(prefix: str, values: dict[str, Any]) -> dict[str, Any]:
     return {f"{prefix}_{key}": value for key, value in values.items()}
 
 
+def request_model_move(
+    client: httpx.Client,
+    model_profile: ModelProfile,
+    api_key: str,
+    system_prompt: str,
+    position: Position,
+) -> tuple[str, str | None, str | None, dict[str, Any] | None]:
+    if model_profile.provider == "openai":
+        return request_openai_move(
+            client,
+            api_key,
+            model_profile.model,
+            model_profile.reasoning_effort or "",
+            model_profile.temperature,
+            model_profile.max_output_tokens,
+            system_prompt,
+            position,
+        )
+    if model_profile.provider == "anthropic":
+        return request_anthropic_move(client, api_key, model_profile, system_prompt, position)
+    if model_profile.provider == "openai-chat":
+        return request_openai_chat_move(client, api_key, model_profile, system_prompt, position)
+    raise SystemExit(f"unsupported provider for generate: {model_profile.provider}")
+
+
 def request_openai_move(
     client: httpx.Client,
     api_key: str,
@@ -1423,6 +1762,86 @@ def request_openai_move(
     return extract_response_text(data), data.get("id"), data.get("status"), usage
 
 
+def request_openai_chat_move(
+    client: httpx.Client,
+    api_key: str,
+    model_profile: ModelProfile,
+    system_prompt: str,
+    position: Position,
+) -> tuple[str, str | None, str | None, dict[str, Any] | None]:
+    api_base = (model_profile.api_base or "https://api.openai.com/v1").rstrip("/")
+    payload: dict[str, Any] = {
+        "model": model_profile.model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": position.model_dump_json()},
+        ],
+        "max_tokens": model_profile.max_output_tokens,
+        "stream": False,
+    }
+    if model_profile.reasoning_effort:
+        payload["reasoning_effort"] = model_profile.reasoning_effort
+    if model_profile.temperature is not None:
+        payload["temperature"] = model_profile.temperature
+
+    try:
+        response = client.post(
+            f"{api_base}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=payload,
+        )
+    except httpx.TimeoutException as exc:
+        raise RuntimeError(f"{model_profile.provider} API timeout for {position.position_id}: {exc}") from exc
+    except httpx.RequestError as exc:
+        raise RuntimeError(f"{model_profile.provider} API request failed for {position.position_id}: {exc}") from exc
+    if response.status_code >= 400:
+        raise RuntimeError(f"{model_profile.provider} API error {response.status_code}: {response.text[:1200]}")
+    data = response.json()
+    usage = data.get("usage") if isinstance(data.get("usage"), dict) else None
+    choice = (data.get("choices") or [{}])[0]
+    message = choice.get("message") if isinstance(choice, dict) else {}
+    text = message.get("content") if isinstance(message, dict) and isinstance(message.get("content"), str) else ""
+    status = "completed" if text.strip() else choice.get("finish_reason") if isinstance(choice, dict) else None
+    return text, data.get("id"), status, usage
+
+
+def request_anthropic_move(
+    client: httpx.Client,
+    api_key: str,
+    model_profile: ModelProfile,
+    system_prompt: str,
+    position: Position,
+) -> tuple[str, str | None, str | None, dict[str, Any] | None]:
+    api_base = (model_profile.api_base or "https://api.anthropic.com").rstrip("/")
+    payload: dict[str, Any] = {
+        "model": model_profile.model,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": position.model_dump_json()}],
+        "max_tokens": model_profile.max_output_tokens,
+    }
+    if model_profile.temperature is not None:
+        payload["temperature"] = model_profile.temperature
+    try:
+        response = client.post(
+            f"{api_base}/v1/messages",
+            headers={
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        )
+    except httpx.TimeoutException as exc:
+        raise RuntimeError(f"Anthropic API timeout for {position.position_id}: {exc}") from exc
+    except httpx.RequestError as exc:
+        raise RuntimeError(f"Anthropic API request failed for {position.position_id}: {exc}") from exc
+    if response.status_code >= 400:
+        raise RuntimeError(f"Anthropic API error {response.status_code}: {response.text[:1200]}")
+    data = response.json()
+    usage = data.get("usage") if isinstance(data.get("usage"), dict) else None
+    return extract_anthropic_text(data), data.get("id"), "completed", usage
+
+
 def extract_response_text(data: dict[str, Any]) -> str:
     if isinstance(data.get("output_text"), str):
         return data["output_text"]
@@ -1431,6 +1850,14 @@ def extract_response_text(data: dict[str, Any]) -> str:
         for content in item.get("content", []):
             if isinstance(content.get("text"), str):
                 texts.append(content["text"])
+    return "\n".join(texts)
+
+
+def extract_anthropic_text(data: dict[str, Any]) -> str:
+    texts: list[str] = []
+    for item in data.get("content", []):
+        if isinstance(item, dict) and item.get("type") == "text" and isinstance(item.get("text"), str):
+            texts.append(item["text"])
     return "\n".join(texts)
 
 
@@ -1549,6 +1976,8 @@ def build_run_metadata_from_profiles(
         "model_profile": model_profile.name,
         "model_profile_path": str(model_profile.path),
         "provider": model_profile.provider,
+        "api_key_env": model_profile.api_key_env,
+        "api_base": model_profile.api_base,
         "reasoning_effort": model_profile.reasoning_effort,
         "temperature": model_profile.temperature,
         "max_output_tokens": model_profile.max_output_tokens,
@@ -1642,6 +2071,8 @@ CONTINUE_COMPATIBILITY_FIELDS = [
     "model_profile",
     "model_profile_path",
     "provider",
+    "api_key_env",
+    "api_base",
     "reasoning_effort",
     "temperature",
     "max_output_tokens",

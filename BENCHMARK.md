@@ -15,9 +15,24 @@ GoBench is intended to be a credibility benchmark for LLM Go performance, not a 
 
 ## Official Run Requirements
 
+Official GoBench results must be generated through a documented model API. The
+accepted generation transports are direct provider APIs and compatible API
+gateways configured in GoBench model profiles, such as `openai`, `anthropic`,
+and `openai-chat`.
+
+Agent runtimes, local execution wrappers, and interactive coding assistants are
+not accepted for official leaderboard submissions. In particular, results
+generated through `codex_exec`, `codex exec`, private Codex runners, shell-based
+agent loops, browser/computer-use automation, or any tool-using runtime should
+be treated as private experiments only. They may be useful for development, but
+they are not official GoBench results because the execution environment adds
+uncontrolled scaffolding beyond the benchmark prompt.
+
 An official GoBench run should record:
 
 - Model name, provider, version, and reasoning/effort setting.
+- API transport and endpoint class, for example `openai`, `anthropic`, or
+  `openai-chat`.
 - Prompt template path and SHA-256 hash.
 - Suite name, visibility, canary, and position count.
 - Scorer name and KataGo version.

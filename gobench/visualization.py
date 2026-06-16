@@ -459,7 +459,7 @@ def int_value(*values: Any) -> int:
 
 def fmt(value: Any) -> str:
     if isinstance(value, (int, float)):
-        return f"{value:.3f}".rstrip("0").rstrip(".")
+        return f"{value:.2f}".rstrip("0").rstrip(".")
     return "n/a"
 
 

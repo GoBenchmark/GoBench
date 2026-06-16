@@ -18,6 +18,8 @@ class ModelProfile:
     temperature: float | None
     max_output_tokens: int
     prompt_template: str
+    api_key_env: str | None = None
+    api_base: str | None = None
 
 
 @dataclass(frozen=True)
@@ -47,6 +49,8 @@ def load_model_profile(value: str) -> ModelProfile:
         temperature=data.get("temperature"),
         max_output_tokens=int(data.get("max_output_tokens", 2000)),
         prompt_template=str(data.get("prompt_template", "prompts/pure_llm_json_v1.txt")),
+        api_key_env=data.get("api_key_env"),
+        api_base=data.get("api_base"),
     )
 
 
