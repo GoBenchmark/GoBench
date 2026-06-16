@@ -373,7 +373,7 @@ def add_model_run_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--max-output-tokens", type=int, default=2000)
     parser.add_argument("--prompt-template", default=DEFAULT_PROMPT_TEMPLATE)
-    parser.add_argument("--out", default="data/runs/openai_test")
+    parser.add_argument("--out", default="data/runs/model_test")
     parser.add_argument("--env-file", default=".env.local")
 
 
@@ -384,13 +384,13 @@ def add_retry_errors_parser(parser: argparse.ArgumentParser) -> None:
         dest="retry_errors",
         action="store_true",
         default=True,
-        help="Retry positions with prior OpenAI errors; default behavior",
+        help="Retry positions with prior provider API errors; default behavior",
     )
     group.add_argument(
         "--no-retry-errors",
         dest="retry_errors",
         action="store_false",
-        help="Pause before retrying positions with prior OpenAI errors",
+        help="Pause before retrying positions with prior provider API errors",
     )
 
 
@@ -1420,7 +1420,7 @@ def run_openai_impl(
     predictions: list[MoveSubmission] = []
     raw_rows: list[dict[str, Any]] = []
     error: str | None = None
-    with httpx.Client(timeout=openai_timeout_seconds()) as client:
+    with httpx.Client(timeout=api_timeout_seconds()) as client:
         for position in positions:
             started = time.time()
             try:
@@ -1576,7 +1576,7 @@ def generate_from_profile(
         )
 
     if pending_positions and not blocked_by_prior_errors:
-        with httpx.Client(timeout=openai_timeout_seconds()) as client:
+        with httpx.Client(timeout=api_timeout_seconds()) as client:
             for position in pending_positions:
                 started = time.time()
                 try:
@@ -1944,15 +1944,24 @@ def extract_anthropic_text(data: dict[str, Any]) -> str:
     return "\n".join(texts)
 
 
-def openai_timeout_seconds() -> float:
-    value = os.getenv("OPENAI_TIMEOUT_SECONDS", "90")
+def api_timeout_seconds() -> float:
+    env_name = (
+        "GOBENCH_API_TIMEOUT_SECONDS"
+        if os.getenv("GOBENCH_API_TIMEOUT_SECONDS")
+        else "OPENAI_TIMEOUT_SECONDS"
+    )
+    value = os.getenv(env_name, "90")
     try:
         timeout = float(value)
     except ValueError as exc:
-        raise RuntimeError(f"OPENAI_TIMEOUT_SECONDS must be numeric, got {value!r}") from exc
+        raise RuntimeError(f"{env_name} must be numeric, got {value!r}") from exc
     if timeout <= 0:
-        raise RuntimeError("OPENAI_TIMEOUT_SECONDS must be positive")
+        raise RuntimeError(f"{env_name} must be positive")
     return timeout
+
+
+def openai_timeout_seconds() -> float:
+    return api_timeout_seconds()
 
 
 def parse_move_text(text: str, status: str | None = None) -> str:

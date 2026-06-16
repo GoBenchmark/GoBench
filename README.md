@@ -100,8 +100,8 @@ python -m gobench.cli eval-file \
 ```
 
 That command uses the checked-in example predictions and labels, so it works
-without an OpenAI key or KataGo install. It is the fastest way to confirm that
-the CLI, parser, legality checks, and metrics pipeline are working.
+without a provider API key or KataGo install. It is the fastest way to confirm
+that the CLI, parser, legality checks, and metrics pipeline are working.
 
 List the model and suite profiles:
 
@@ -128,7 +128,7 @@ compatible API gateways through GoBench model profiles; `codex_exec`, private
 Codex runners, shell-based agent loops, browser/computer-use automation, and
 other tool-using runtimes are not accepted as official results.
 
-Configure your local model profile and API key once:
+Configure your local model profile and API key once, for example:
 
 ```bash
 python -m gobench.cli configure \
@@ -189,7 +189,9 @@ python -m gobench.cli generate \
   --out data/runs/my-model-public-dev
 ```
 
-For benchmark-style scored results, configure KataGo too:
+For benchmark-style scored results, configure KataGo too. The example below
+uses an OpenAI profile, but the same scorer flags work with other provider
+presets:
 
 ```bash
 python -m gobench.cli configure --force \
@@ -324,16 +326,18 @@ The final JSON prints both `visualization` and
 `visualization_url` so the HTML can be reopened later. `--visualize-top-k`
 controls how many KataGo candidate moves are shown.
 
-During `run` and `run-openai`, GoBench shows a compact live elapsed timer on
-stderr. In an interactive terminal it updates one inline status line every
-second; when stderr is captured it prints a sparse line every 60 seconds. Set
-`GOBENCH_TIMER_INTERVAL_SECONDS=0` or `GOBENCH_TIMER_STYLE=off` to disable the
-timer. Use `GOBENCH_TIMER_STYLE=lines` to force line output, or
+During profile-based `run` and the legacy `run-openai` command, GoBench shows a
+compact live elapsed timer on stderr. In an interactive terminal it updates one
+inline status line every second; when stderr is captured it prints a sparse
+line every 60 seconds. Set `GOBENCH_TIMER_INTERVAL_SECONDS=0` or
+`GOBENCH_TIMER_STYLE=off` to disable the timer. Use
+`GOBENCH_TIMER_STYLE=lines` to force line output, or
 `GOBENCH_PROGRESS_FORMAT=json` if you want machine-readable progress logs.
 Completed runs store `run_elapsed_seconds` and `run_elapsed_human`; the
-visualization page shows the elapsed runtime. OpenAI requests time out after 90
-seconds by default; set `OPENAI_TIMEOUT_SECONDS=60` to cut off bad connections
-sooner, or raise it for very slow high-effort models.
+visualization page shows the elapsed runtime. Provider API requests time out
+after 90 seconds by default. Set `GOBENCH_API_TIMEOUT_SECONDS=60` to cut off
+bad connections sooner, or raise it for very slow high-effort models.
+`OPENAI_TIMEOUT_SECONDS` is still accepted as a backward-compatible fallback.
 
 For longer runs, resume generation without discarding completed predictions:
 

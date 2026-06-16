@@ -9,6 +9,7 @@ from gobench.api.schemas import MoveSubmission, Position, ScoreResult
 from gobench.cli import (
     build_run_metadata_from_profiles,
     add_run_visualization_parser,
+    api_timeout_seconds,
     bundle_submission,
     cmd_configure,
     extract_anthropic_text,
@@ -111,17 +112,39 @@ def test_bundle_submission_rejects_public_dev_without_dry_run_flag(tmp_path):
     assert Path(summary["archive"]).exists()
 
 
-def test_openai_timeout_seconds_defaults_to_shorter_timeout(monkeypatch):
+def test_api_timeout_seconds_defaults_to_shorter_timeout(monkeypatch):
+    monkeypatch.delenv("GOBENCH_API_TIMEOUT_SECONDS", raising=False)
     monkeypatch.delenv("OPENAI_TIMEOUT_SECONDS", raising=False)
 
-    assert openai_timeout_seconds() == 90.0
+    assert api_timeout_seconds() == 90.0
 
 
-def test_openai_timeout_seconds_validates_env(monkeypatch):
-    monkeypatch.setenv("OPENAI_TIMEOUT_SECONDS", "0")
+def test_api_timeout_seconds_prefers_provider_neutral_env(monkeypatch):
+    monkeypatch.setenv("GOBENCH_API_TIMEOUT_SECONDS", "45")
+    monkeypatch.setenv("OPENAI_TIMEOUT_SECONDS", "10")
+
+    assert api_timeout_seconds() == 45.0
+
+
+def test_api_timeout_seconds_keeps_openai_env_fallback(monkeypatch):
+    monkeypatch.delenv("GOBENCH_API_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.setenv("OPENAI_TIMEOUT_SECONDS", "30")
+
+    assert api_timeout_seconds() == 30.0
+
+
+def test_openai_timeout_seconds_alias_keeps_backward_compatibility(monkeypatch):
+    monkeypatch.delenv("GOBENCH_API_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.setenv("OPENAI_TIMEOUT_SECONDS", "25")
+
+    assert openai_timeout_seconds() == 25.0
+
+
+def test_api_timeout_seconds_validates_env(monkeypatch):
+    monkeypatch.setenv("GOBENCH_API_TIMEOUT_SECONDS", "0")
 
     with pytest.raises(RuntimeError):
-        openai_timeout_seconds()
+        api_timeout_seconds()
 
 
 def test_format_duration_uses_clock_style():
