@@ -22,6 +22,15 @@ not being measured.
 
 ![GoBench visualization preview](docs/gobench-visualization.png)
 
+> [!IMPORTANT]
+> **Official benchmark submissions are API-only.** Public-dev runs are for
+> debugging, not leaderboard claims. Official GoBench results must use the
+> closed `official_v0_1` suite, real KataGo scoring, preserved run artifacts,
+> and documented model API or API-gateway calls. `codex_exec`, private Codex
+> runners, shell agents, browser/computer-use automation, tool-assisted runs,
+> mock scoring, and leaked hidden data are not accepted. See
+> [Official Benchmark Submissions](#official-benchmark-submissions).
+
 ## Reading the Preview
 
 - **GoBench Score:** a 0-100 display score derived from mean point loss. Higher
@@ -371,6 +380,35 @@ This creates 50 independent KataGo-guided game prefixes, evenly distributed
 from move 5 through move 300. Keep `data/official_v0_1` private; official
 leaderboard results should report only aggregate metrics and run artifacts.
 
+## Official Benchmark Submissions
+
+Public-dev runs are welcome for debugging prompts, API setup, legality, and
+visualization, but they are not official leaderboard claims. An official
+GoBench v0.1 submission must use the closed `official_v0_1` suite held by the
+benchmark maintainer.
+
+Official submissions must:
+
+- Generate moves through a documented model API or compatible API gateway
+  configured in a GoBench model profile.
+- Use a fixed model id, provider, API transport, reasoning/effort setting,
+  prompt template, and prompt SHA-256.
+- Use real KataGo scoring with the published official config or a documented
+  successor, not the mock scorer.
+- Preserve `run.json`, `predictions.jsonl`, `raw_responses.jsonl`,
+  `results.jsonl`, `metrics.json`, and `report.md`.
+- Report aggregate metrics, model identity, prompt hash, scorer/KataGo
+  settings, token counts, latency, run date, and whether the suite is
+  `public_dev` or `official_v0_1`.
+
+The following are not accepted as official leaderboard submissions:
+`codex_exec`, `codex exec`, private Codex runners, shell-based agent loops,
+browser/computer-use automation, tool-assisted model runs, public-dev scores,
+mock-scored runs, or runs that expose hidden positions or labels.
+
+For the full submission checklist, see `docs/submission.md`. For the protocol
+and anti-contamination policy, see `BENCHMARK.md`.
+
 For quick CI/dev smoke tests without KataGo, keep using synthetic toy data in a
 separate directory:
 
@@ -558,3 +596,5 @@ Before treating a run as a benchmark result:
 - Keep `run.json`, `predictions.jsonl`, `raw_responses.jsonl`, `results.jsonl`, `metrics.json`, and `report.md`.
 - Report whether the suite is public-dev or official-hidden.
 - Treat public-dev scores as smoke/debug results, not final leaderboard claims.
+- For official leaderboard claims, follow the
+  `Official Benchmark Submissions` section above and `docs/submission.md`.
