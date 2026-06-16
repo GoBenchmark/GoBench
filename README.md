@@ -25,12 +25,13 @@ not being measured.
 ![GoBench visualization preview](docs/gobench-visualization.png)
 
 > [!IMPORTANT]
-> **Official benchmark submissions are API-only.** Public-dev runs are for
-> debugging, not leaderboard claims. Official GoBench results must use the
-> closed `official_v0_1` suite, real KataGo scoring, preserved run artifacts,
-> and documented model API or API-gateway calls. `codex_exec`, private Codex
-> runners, shell agents, browser/computer-use automation, tool-assisted runs,
-> mock scoring, and leaked hidden data are not accepted. See
+> **Official benchmark submissions are API-only.** Public-dev means the open
+> `suites/public_dev.yaml` / `data/public_dev` development suite; public-dev
+> runs are for debugging, not leaderboard claims. Official GoBench results must
+> use the closed `official_v0_1` suite, real KataGo scoring, preserved run
+> artifacts, and documented model API or API-gateway calls. `codex_exec`,
+> private Codex runners, shell agents, browser/computer-use automation,
+> tool-assisted runs, mock scoring, and leaked hidden data are not accepted. See
 > [Official Benchmark Submissions](#official-benchmark-submissions).
 
 ## 🔍 Reading the Preview
@@ -229,10 +230,11 @@ python -m gobench.cli leaderboard data/runs
 
 ## 🏁 Official Benchmark Submissions
 
-Public-dev runs are welcome for debugging prompts, API setup, legality, and
-visualization, but they are not official leaderboard claims. An official
-GoBench v0.1 submission must use the closed `official_v0_1` suite held by the
-benchmark maintainer.
+Public-dev means the open `suites/public_dev.yaml` / `data/public_dev`
+development suite. Public-dev runs are welcome for debugging prompts, API
+setup, legality, and visualization, but they are not official leaderboard
+claims. An official GoBench v0.1 submission must use the closed
+`official_v0_1` suite held by the benchmark maintainer.
 
 Official submissions must:
 
