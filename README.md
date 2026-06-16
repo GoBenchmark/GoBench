@@ -33,7 +33,7 @@ not being measured.
 > mock scoring, and leaked hidden data are not accepted. See
 > [Official Benchmark Submissions](#official-benchmark-submissions).
 
-## Reading the Preview
+## 🔍 Reading the Preview
 
 - **GoBench Score:** a 0-100 display score derived from mean point loss. Higher
   is better.
@@ -53,7 +53,7 @@ not being measured.
   legality, scoring, and visualization. It is not an official leaderboard
   claim.
 
-## What GoBench Measures
+## 🎯 What GoBench Measures
 
 - **Board understanding:** can the model parse and reason from a raw 19x19
   position?
@@ -70,7 +70,7 @@ This prototype is intentionally small. It does not implement full-game play, Elo
 
 For the benchmark governance model, official scorer settings, and anti-contamination policy, see `BENCHMARK.md`.
 
-## Quick Start
+## ⚡ Quick Start
 
 Install GoBench in an isolated environment:
 
@@ -120,7 +120,7 @@ ready. It exits nonzero when required real-scoring pieces are missing. Missing
 KataGo is fine for the no-network smoke test above; real benchmark claims
 should use KataGo scoring.
 
-## Run a Model
+## 🤖 Run a Model
 
 Official leaderboard submissions are API-only. Use direct provider APIs or
 compatible API gateways through GoBench model profiles; `codex_exec`, private
@@ -225,7 +225,7 @@ Build a local leaderboard from saved runs:
 python -m gobench.cli leaderboard data/runs
 ```
 
-## Profile-Based Workflow
+## 🧭 Profile-Based Workflow
 
 GoBench supports benchmark-style model and suite profiles:
 
@@ -323,7 +323,7 @@ This writes `visualization/index.html` inside the run directory and prints a
 no candidate cache exists, `visualize` needs the same `KATAGO_BIN`,
 `KATAGO_MODEL`, and `KATAGO_CONFIG` environment as normal KataGo scoring.
 
-## Public Dev Data
+## 🧪 Public Dev Data
 
 `data/public_dev` is the open debugging suite. The current public-dev positions
 are 10 evenly sampled positions from independent KataGo self-play game prefixes,
@@ -358,7 +358,7 @@ prefixes through 199 moves require about 1,000 KataGo root queries before any
 labeling. During generation, progress is printed to stderr at position start,
 every 10 played moves, and position completion.
 
-## Official v0.1 Hidden Suite
+## 🔒 Official v0.1 Hidden Suite
 
 The public repository declares the official v0.1 protocol in
 `suites/official_v0_1.yaml`, but the actual positions are closed and ignored by
@@ -382,7 +382,9 @@ This creates 50 independent KataGo-guided game prefixes, evenly distributed
 from move 5 through move 300. Keep `data/official_v0_1` private; official
 leaderboard results should report only aggregate metrics and run artifacts.
 
-## Official Benchmark Submissions
+<a id="official-benchmark-submissions"></a>
+
+## 🏁 Official Benchmark Submissions
 
 Public-dev runs are welcome for debugging prompts, API setup, legality, and
 visualization, but they are not official leaderboard claims. An official
@@ -403,6 +405,34 @@ Official submissions must:
   settings, token counts, latency, run date, and whether the suite is
   `public_dev` or `official_v0_1`.
 
+After receiving authorized access to the official hidden suite, use this compact
+command flow:
+
+```bash
+export GOBENCH_SCORER=katago
+export KATAGO_BIN=/path/to/katago
+export KATAGO_MODEL=/path/to/model.bin.gz
+export KATAGO_CONFIG=configs/katago_gobench_official.cfg
+export KATAGO_MAX_VISITS=2048
+export KATAGO_ANALYSIS_PV_LEN=12
+
+RUN_DIR=data/runs/your-model-official-v0-1
+
+python -m gobench.cli run \
+  --model-profile .gobench/model.yaml \
+  --suite suites/official_v0_1.yaml \
+  --out "$RUN_DIR" \
+  --no-visualize
+
+python -m gobench.cli bundle-submission "$RUN_DIR"
+```
+
+`bundle-submission` validates the required files and writes
+`data/runs/your-model-official-v0-1-submission.tar.gz`. Submit that archive
+plus the checklist in `docs/submission.md` through the maintainer-approved
+submission channel. Do not publish hidden-suite positions, labels, prompts
+containing hidden positions, or visualization artifacts for official runs.
+
 The following are not accepted as official leaderboard submissions:
 `codex_exec`, `codex exec`, private Codex runners, shell-based agent loops,
 browser/computer-use automation, tool-assisted model runs, public-dev scores,
@@ -418,7 +448,7 @@ separate directory:
 python -m gobench.cli make-toy-data --out data/toy_dev --n 20
 ```
 
-## Local File Evaluation
+## 📄 Local File Evaluation
 
 ```bash
 python -m gobench.cli eval-file \
@@ -437,7 +467,7 @@ GoBench Score = 100 * exp(-mean_point_loss / 2)
 
 Higher is better. The official ranking metric remains MPL because it directly measures points lost against KataGo.
 
-## Private Evaluation Server
+## 🖥️ Private Evaluation Server
 
 Start the server:
 
@@ -485,7 +515,7 @@ Get aggregate metrics:
 curl http://127.0.0.1:8000/runs/{run_id}/report
 ```
 
-## Legacy OpenAI Smoke Run
+## 🧪 Legacy OpenAI Smoke Run
 
 The profile-based `run` command is preferred. The older direct OpenAI command is still available:
 
@@ -519,7 +549,7 @@ Generate a local leaderboard from saved run directories:
 python -m gobench.cli leaderboard data/runs
 ```
 
-## Real KataGo Scoring
+## ⚖️ Real KataGo Scoring
 
 Mock scoring is the default and is not real benchmark scoring. It exists so the
 API, CLI, metrics, and tests run without KataGo installed.
@@ -585,7 +615,7 @@ For full hidden-test quality, use a tuned `analysis.cfg`, a strong model, and en
 
 For leaderboard-style local scoring, prefer `configs/katago_gobench_official.cfg`. It disables neural-net board-orientation randomization, uses fixed visits and PV length, and removes wide-root noise. The Homebrew `analysis_example.cfg` is useful for exploration but has `nnRandomize = true`, so it is not the best default for official benchmark claims.
 
-## Credibility Checklist
+## ✅ Credibility Checklist
 
 Before treating a run as a benchmark result:
 

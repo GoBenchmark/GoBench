@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import tarfile
 import threading
 import time
 from datetime import datetime, timezone
@@ -50,6 +51,14 @@ DEFAULT_PROMPT_TEMPLATE = "prompts/pure_llm_json_v1.txt"
 DEFAULT_BUILTIN_MODEL_PROFILE = "models/gpt-5.5-xhigh.yaml"
 DEFAULT_LOCAL_MODEL_PROFILE = ".gobench/model.yaml"
 DEFAULT_ENV_FILE = ".env.local"
+SUBMISSION_ARTIFACTS = (
+    "run.json",
+    "predictions.jsonl",
+    "raw_responses.jsonl",
+    "results.jsonl",
+    "metrics.json",
+    "report.md",
+)
 
 MODEL_PRESETS: dict[str, dict[str, Any]] = {
     "openai": {
@@ -189,6 +198,20 @@ def main() -> None:
     report_parser = subparsers.add_parser("report")
     report_parser.add_argument("run_dir")
 
+    submission_parser = subparsers.add_parser("bundle-submission")
+    submission_parser.add_argument("run_dir")
+    submission_parser.add_argument("--out")
+    submission_parser.add_argument(
+        "--allow-public-dev",
+        action="store_true",
+        help="Allow packaging a non-official suite for dry-run testing only",
+    )
+    submission_parser.add_argument(
+        "--allow-incomplete",
+        action="store_true",
+        help="Allow packaging an incomplete run for debugging only",
+    )
+
     visualize_parser = subparsers.add_parser("visualize")
     visualize_parser.add_argument("run_dir")
     visualize_parser.add_argument("--suite")
@@ -282,6 +305,8 @@ def main() -> None:
             cmd_score(args.suite, args.run_dir, args.predictions, args.out)
         elif args.command == "report":
             cmd_report(args.run_dir)
+        elif args.command == "bundle-submission":
+            cmd_bundle_submission(args.run_dir, args.out, args.allow_public_dev, args.allow_incomplete)
         elif args.command == "visualize":
             cmd_visualize(
                 args.run_dir,
@@ -943,6 +968,64 @@ def cmd_report(run_dir: str) -> None:
     summary = json.loads(metrics_path.read_text(encoding="utf-8"))
     (run_path / "report.md").write_text(render_markdown_report(summary), encoding="utf-8")
     print(json.dumps({"report": str(run_path / "report.md")}, indent=2))
+
+
+def cmd_bundle_submission(
+    run_dir: str,
+    out: str | None,
+    allow_public_dev: bool,
+    allow_incomplete: bool,
+) -> None:
+    summary = bundle_submission(Path(run_dir), Path(out) if out else None, allow_public_dev, allow_incomplete)
+    print(json.dumps(summary, indent=2, sort_keys=True))
+
+
+def bundle_submission(
+    run_dir: Path,
+    out: Path | None = None,
+    allow_public_dev: bool = False,
+    allow_incomplete: bool = False,
+) -> dict[str, Any]:
+    if not run_dir.exists() or not run_dir.is_dir():
+        raise SystemExit(f"run directory not found: {run_dir}")
+
+    missing = [name for name in SUBMISSION_ARTIFACTS if not (run_dir / name).exists()]
+    if missing:
+        raise SystemExit(f"missing required submission artifact(s): {', '.join(missing)}")
+
+    metrics_path = run_dir / "metrics.json"
+    summary = json.loads(metrics_path.read_text(encoding="utf-8"))
+    run = summary.get("run") if isinstance(summary.get("run"), dict) else {}
+
+    if not allow_incomplete and not summary.get("completed"):
+        raise SystemExit("refusing to bundle incomplete run; rerun or pass --allow-incomplete for debugging only")
+
+    suite = str(run.get("suite") or "")
+    suite_visibility = str(run.get("suite_visibility") or "")
+    if not allow_public_dev and suite != "official_v0_1" and suite_visibility != "official_hidden":
+        raise SystemExit(
+            "refusing to bundle non-official suite for submission; use official_v0_1 or pass "
+            "--allow-public-dev for a dry-run package"
+        )
+
+    scorer = str(run.get("scorer") or "").lower()
+    if "mock" in scorer:
+        raise SystemExit("refusing to bundle mock-scored run for official submission")
+
+    archive_path = out or run_dir.with_name(f"{run_dir.name}-submission.tar.gz")
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(archive_path, "w:gz") as archive:
+        for name in SUBMISSION_ARTIFACTS:
+            archive.add(run_dir / name, arcname=name)
+
+    return {
+        "archive": str(archive_path),
+        "artifacts": list(SUBMISSION_ARTIFACTS),
+        "run_dir": str(run_dir),
+        "suite": suite or None,
+        "suite_visibility": suite_visibility or None,
+        "scorer": scorer or None,
+    }
 
 
 def cmd_visualize(

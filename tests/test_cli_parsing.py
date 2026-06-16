@@ -1,4 +1,6 @@
 import argparse
+import json
+import tarfile
 from pathlib import Path
 
 import pytest
@@ -7,6 +9,7 @@ from gobench.api.schemas import MoveSubmission, Position, ScoreResult
 from gobench.cli import (
     build_run_metadata_from_profiles,
     add_run_visualization_parser,
+    bundle_submission,
     cmd_configure,
     extract_anthropic_text,
     format_duration,
@@ -58,6 +61,54 @@ def test_run_visualization_parser_can_default_to_open_browser():
     assert no_open.open is False
     assert no_visualize.visualize is False
     assert no_visualize.open is False
+
+
+def make_submission_run_dir(tmp_path: Path, *, suite: str = "official_v0_1", completed: bool = True) -> Path:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    run = {
+        "model": "api-model",
+        "provider": "openai",
+        "suite": suite,
+        "suite_visibility": "official_hidden" if suite == "official_v0_1" else "public",
+        "scorer": "katago-1.16.4",
+        "prompt_sha256": "abc123",
+    }
+    (run_dir / "run.json").write_text(json.dumps(run), encoding="utf-8")
+    (run_dir / "metrics.json").write_text(json.dumps({"completed": completed, "run": run, "metrics": {}}), encoding="utf-8")
+    for name in ("predictions.jsonl", "raw_responses.jsonl", "results.jsonl"):
+        (run_dir / name).write_text("{}\n", encoding="utf-8")
+    (run_dir / "report.md").write_text("# report\n", encoding="utf-8")
+    return run_dir
+
+
+def test_bundle_submission_creates_compact_archive(tmp_path):
+    run_dir = make_submission_run_dir(tmp_path)
+
+    summary = bundle_submission(run_dir)
+
+    archive_path = Path(summary["archive"])
+    assert archive_path.name == "run-submission.tar.gz"
+    with tarfile.open(archive_path, "r:gz") as archive:
+        assert archive.getnames() == [
+            "run.json",
+            "predictions.jsonl",
+            "raw_responses.jsonl",
+            "results.jsonl",
+            "metrics.json",
+            "report.md",
+        ]
+
+
+def test_bundle_submission_rejects_public_dev_without_dry_run_flag(tmp_path):
+    run_dir = make_submission_run_dir(tmp_path, suite="public_dev")
+
+    with pytest.raises(SystemExit, match="non-official suite"):
+        bundle_submission(run_dir)
+
+    summary = bundle_submission(run_dir, allow_public_dev=True)
+
+    assert Path(summary["archive"]).exists()
 
 
 def test_openai_timeout_seconds_defaults_to_shorter_timeout(monkeypatch):
