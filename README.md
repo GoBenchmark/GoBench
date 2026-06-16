@@ -1,5 +1,7 @@
 # GoBench
 
+![GoBench ASI launch poster](docs/social/gobench-x-poster-1.png)
+
 Can today's AI models actually reason about Go, or are they just fluent about Go?
 
 GoBench is a compact benchmark for evaluating both the **generalization** and

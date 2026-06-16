@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">GoBench ASI launch poster</title>
+  <desc id="desc">A sci-fi Go benchmark poster with a holographic Go board, ASI typography, and deterministic launch text.</desc>
+  <defs>
+    <radialGradient id="bgCore" cx="50%" cy="48%" r="72%">
+      <stop offset="0%" stop-color="#20336b"/>
+      <stop offset="38%" stop-color="#101832"/>
+      <stop offset="72%" stop-color="#090b17"/>
+      <stop offset="100%" stop-color="#02030a"/>
+    </radialGradient>
+    <linearGradient id="neonLine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5ef5ff"/>
+      <stop offset="46%" stop-color="#a879ff"/>
+      <stop offset="100%" stop-color="#ffcf66"/>
+    </linearGradient>
+    <linearGradient id="titleFill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="36%" stop-color="#8ff7ff"/>
+      <stop offset="72%" stop-color="#e7dcff"/>
+      <stop offset="100%" stop-color="#ffd67a"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.33 0 0 0 0 0.92 0 0 0 0 1 0 0 0 0.85 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="goldGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 1 0 0 0 0 0.62 0 0 0 0 0.18 0 0 0 0.9 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="microGrid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#2dd8ff" stroke-width="1" opacity="0.12"/>
+    </pattern>
+    <clipPath id="boardClip">
+      <path d="M612 246 L1036 196 L1206 694 L416 742 Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bgCore)"/>
+  <rect width="1600" height="900" fill="url(#microGrid)" opacity="0.65"/>
+
+  <g opacity="0.7">
+    <circle cx="172" cy="156" r="2.4" fill="#ffffff"/>
+    <circle cx="292" cy="680" r="1.8" fill="#8ff7ff"/>
+    <circle cx="446" cy="94" r="1.6" fill="#ffcf66"/>
+    <circle cx="564" cy="812" r="2.1" fill="#ffffff"/>
+    <circle cx="854" cy="82" r="1.7" fill="#8ff7ff"/>
+    <circle cx="1174" cy="126" r="2.5" fill="#ffffff"/>
+    <circle cx="1368" cy="720" r="1.8" fill="#ffcf66"/>
+    <circle cx="1488" cy="224" r="1.5" fill="#8ff7ff"/>
+    <circle cx="94" cy="746" r="1.5" fill="#a879ff"/>
+    <circle cx="1514" cy="790" r="2" fill="#ffffff"/>
+  </g>
+
+  <g transform="translate(800 456)" opacity="0.48" filter="url(#softGlow)">
+    <circle r="318" fill="none" stroke="url(#neonLine)" stroke-width="2"/>
+    <circle r="244" fill="none" stroke="#5ef5ff" stroke-width="1.3" stroke-dasharray="8 18"/>
+    <circle r="168" fill="none" stroke="#ffcf66" stroke-width="1.3" stroke-dasharray="20 18"/>
+    <path d="M-408 0H408M0-408V408M-288-288L288 288M288-288L-288 288" stroke="#5ef5ff" stroke-width="1.2" opacity="0.36"/>
+  </g>
+
+  <text x="800" y="176" text-anchor="middle" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="132" font-weight="900" letter-spacing="10" fill="none" stroke="url(#neonLine)" stroke-width="2" opacity="0.72">ASI</text>
+  <text x="800" y="176" text-anchor="middle" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="132" font-weight="900" letter-spacing="10" fill="url(#titleFill)" opacity="0.15">ASI</text>
+
+  <g filter="url(#softGlow)">
+    <path d="M612 246 L1036 196 L1206 694 L416 742 Z" fill="#080d1e" stroke="url(#neonLine)" stroke-width="4"/>
+    <path d="M652 292 L1008 252 L1142 654 L476 694 Z" fill="#0e1834" stroke="#5ef5ff" stroke-width="1.5" opacity="0.9"/>
+  </g>
+
+  <g clip-path="url(#boardClip)" opacity="0.92">
+    <g stroke="#77eeff" stroke-width="1.35" opacity="0.55">
+      <path d="M657 294 L481 695"/>
+      <path d="M676 292 L516 693"/>
+      <path d="M696 289 L552 691"/>
+      <path d="M716 287 L588 689"/>
+      <path d="M735 285 L624 687"/>
+      <path d="M755 283 L660 684"/>
+      <path d="M775 281 L696 682"/>
+      <path d="M795 278 L732 680"/>
+      <path d="M814 276 L768 678"/>
+      <path d="M834 274 L804 676"/>
+      <path d="M854 272 L840 674"/>
+      <path d="M874 269 L876 671"/>
+      <path d="M893 267 L912 669"/>
+      <path d="M913 265 L948 667"/>
+      <path d="M933 263 L984 665"/>
+      <path d="M953 260 L1020 663"/>
+      <path d="M972 258 L1056 661"/>
+      <path d="M992 256 L1092 658"/>
+      <path d="M1012 254 L1128 656"/>
+      <path d="M652 293 L1008 252"/>
+      <path d="M641 319 L1017 278"/>
+      <path d="M629 346 L1026 304"/>
+      <path d="M618 372 L1035 331"/>
+      <path d="M606 399 L1044 357"/>
+      <path d="M594 425 L1053 383"/>
+      <path d="M583 452 L1062 410"/>
+      <path d="M571 478 L1071 436"/>
+      <path d="M560 505 L1080 462"/>
+      <path d="M548 531 L1089 489"/>
+      <path d="M536 558 L1098 515"/>
+      <path d="M525 584 L1107 541"/>
+      <path d="M513 611 L1116 568"/>
+      <path d="M501 637 L1125 594"/>
+      <path d="M490 664 L1134 620"/>
+      <path d="M478 690 L1143 647"/>
+    </g>
+  </g>
+
+  <g filter="url(#goldGlow)">
+    <circle cx="773" cy="456" r="26" fill="#060713" stroke="#ffffff" stroke-width="5"/>
+    <circle cx="870" cy="421" r="23" fill="#f6f3e8" stroke="#ffd67a" stroke-width="4"/>
+    <circle cx="936" cy="530" r="27" fill="#05060d" stroke="#5ef5ff" stroke-width="4"/>
+    <circle cx="694" cy="580" r="25" fill="#f7f1df" stroke="#ffd67a" stroke-width="4"/>
+    <circle cx="1044" cy="604" r="22" fill="#05060d" stroke="#a879ff" stroke-width="4"/>
+    <circle cx="594" cy="414" r="19" fill="#f6f3e8" stroke="#ffffff" stroke-width="3"/>
+  </g>
+
+  <g opacity="0.72" filter="url(#softGlow)">
+    <path d="M302 344 C184 400 158 542 268 616" fill="none" stroke="#a879ff" stroke-width="3" stroke-dasharray="16 18"/>
+    <path d="M1298 292 C1422 356 1436 554 1316 634" fill="none" stroke="#ffcf66" stroke-width="3" stroke-dasharray="14 20"/>
+    <path d="M318 630 C516 820 1018 834 1288 648" fill="none" stroke="#5ef5ff" stroke-width="2" opacity="0.72"/>
+  </g>
+
+  <g>
+    <text x="84" y="118" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="36" font-weight="800" fill="#8ff7ff" letter-spacing="2">GoBench</text>
+    <text x="84" y="184" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="58" font-weight="900" fill="#ffffff">Can ASI reason</text>
+    <text x="84" y="250" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="58" font-weight="900" fill="#ffffff">over the board?</text>
+    <text x="84" y="316" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="27" font-weight="600" fill="#c7d4ff">Pure-text 19x19 Go. No tools.</text>
+    <text x="84" y="354" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="27" font-weight="600" fill="#c7d4ff">One move. KataGo-regret scoring.</text>
+  </g>
+
+  <g transform="translate(1058 102)">
+    <rect x="0" y="0" width="438" height="160" rx="0" fill="#070b18" opacity="0.72" stroke="#5ef5ff" stroke-width="1.4"/>
+    <text x="28" y="46" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="23" font-weight="800" fill="#ffd67a">The ASI test is unforgiving:</text>
+    <text x="28" y="88" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="25" font-weight="800" fill="#ffffff">strong play without engines,</text>
+    <text x="28" y="126" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="25" font-weight="800" fill="#ffffff">search, or hidden tools.</text>
+  </g>
+
+  <g transform="translate(84 752)">
+    <rect x="0" y="0" width="574" height="64" rx="0" fill="#ffffff" opacity="0.08" stroke="#ffffff" stroke-width="1"/>
+    <text x="28" y="42" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="25" font-weight="800" fill="#ffffff">github.com/GoBenchmark/GoBench</text>
+  </g>
+
+  <g transform="translate(1018 744)">
+    <text x="0" y="0" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="21" font-weight="700" fill="#8ff7ff">GENERALIZATION</text>
+    <text x="0" y="34" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="21" font-weight="700" fill="#ffd67a">REASONING</text>
+    <text x="0" y="68" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="21" font-weight="700" fill="#e7dcff">POINT-LOSS REGRET</text>
+  </g>
+</svg>

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">GoBench launch poster</title>
+  <desc id="desc">Poster announcing GoBench as a pure-text Go benchmark for AI models with KataGo point-loss scoring.</desc>
+  <rect width="1600" height="900" fill="#f6f7f9"/>
+  <rect x="0" y="0" width="1600" height="900" fill="#f6f7f9"/>
+  <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <rect x="70" y="64" width="1460" height="772" rx="26" fill="#ffffff" stroke="#d8dde6" stroke-width="2"/>
+    <text x="116" y="146" font-size="38" font-weight="800" fill="#0f62fe">GoBench</text>
+    <text x="116" y="236" font-size="62" font-weight="850" fill="#121418">Can AI models</text>
+    <text x="116" y="304" font-size="62" font-weight="850" fill="#121418">really reason about Go?</text>
+    <text x="118" y="370" font-size="25" fill="#48515d">Pure-text 19x19 Go benchmark. No engines. No tools.</text>
+    <text x="118" y="408" font-size="25" fill="#48515d">One legal next move, scored by KataGo point-loss regret.</text>
+
+    <g transform="translate(116 468)">
+      <rect x="0" y="0" width="265" height="108" rx="12" fill="#fbfcfe" stroke="#d8dde6"/>
+      <text x="22" y="38" font-size="20" fill="#626a76">Mean Point Loss</text>
+      <text x="22" y="82" font-size="42" font-weight="820" fill="#121418">MPL</text>
+      <rect x="295" y="0" width="265" height="108" rx="12" fill="#fbfcfe" stroke="#d8dde6"/>
+      <text x="317" y="38" font-size="20" fill="#626a76">GoBench Score</text>
+      <text x="317" y="82" font-size="42" font-weight="820" fill="#0f62fe">0-100</text>
+    </g>
+
+    <g transform="translate(116 612)">
+      <rect width="560" height="118" rx="16" fill="#eef6ff" stroke="#b7d7ff"/>
+      <circle cx="42" cy="59" r="16" fill="#0f62fe"/>
+      <text x="72" y="52" font-size="23" font-weight="760" fill="#121418">Official submissions are API-only</text>
+      <text x="72" y="86" font-size="20" fill="#48515d">Public-dev is for debugging, not leaderboard claims.</text>
+    </g>
+
+    <g transform="translate(850 122)">
+      <rect x="0" y="0" width="590" height="590" rx="20" fill="#d9aa5f" stroke="#8a5a22" stroke-width="3"/>
+      <g stroke="#4f351b" stroke-width="1.7">
+        <line x1="48" y1="48" x2="542" y2="48"/>
+        <line x1="48" y1="96" x2="542" y2="96"/>
+        <line x1="48" y1="144" x2="542" y2="144"/>
+        <line x1="48" y1="192" x2="542" y2="192"/>
+        <line x1="48" y1="240" x2="542" y2="240"/>
+        <line x1="48" y1="288" x2="542" y2="288"/>
+        <line x1="48" y1="336" x2="542" y2="336"/>
+        <line x1="48" y1="384" x2="542" y2="384"/>
+        <line x1="48" y1="432" x2="542" y2="432"/>
+        <line x1="48" y1="480" x2="542" y2="480"/>
+        <line x1="48" y1="528" x2="542" y2="528"/>
+        <line x1="48" y1="48" x2="48" y2="542"/>
+        <line x1="96" y1="48" x2="96" y2="542"/>
+        <line x1="144" y1="48" x2="144" y2="542"/>
+        <line x1="192" y1="48" x2="192" y2="542"/>
+        <line x1="240" y1="48" x2="240" y2="542"/>
+        <line x1="288" y1="48" x2="288" y2="542"/>
+        <line x1="336" y1="48" x2="336" y2="542"/>
+        <line x1="384" y1="48" x2="384" y2="542"/>
+        <line x1="432" y1="48" x2="432" y2="542"/>
+        <line x1="480" y1="48" x2="480" y2="542"/>
+        <line x1="528" y1="48" x2="528" y2="542"/>
+      </g>
+      <g fill="#4f351b">
+        <circle cx="144" cy="144" r="5"/>
+        <circle cx="288" cy="144" r="5"/>
+        <circle cx="432" cy="144" r="5"/>
+        <circle cx="144" cy="288" r="5"/>
+        <circle cx="288" cy="288" r="5"/>
+        <circle cx="432" cy="288" r="5"/>
+        <circle cx="144" cy="432" r="5"/>
+        <circle cx="288" cy="432" r="5"/>
+        <circle cx="432" cy="432" r="5"/>
+      </g>
+      <g>
+        <circle cx="144" cy="144" r="23" fill="#111827" stroke="#050505" stroke-width="2"/>
+        <circle cx="192" cy="192" r="23" fill="#111827" stroke="#050505" stroke-width="2"/>
+        <circle cx="240" cy="192" r="23" fill="#f8fafc" stroke="#111827" stroke-width="2.4"/>
+        <circle cx="288" cy="240" r="23" fill="#f8fafc" stroke="#111827" stroke-width="2.4"/>
+        <circle cx="432" cy="144" r="23" fill="#111827" stroke="#050505" stroke-width="2"/>
+        <circle cx="480" cy="192" r="23" fill="#f8fafc" stroke="#111827" stroke-width="2.4"/>
+        <circle cx="144" cy="384" r="23" fill="#f8fafc" stroke="#111827" stroke-width="2.4"/>
+        <circle cx="192" cy="432" r="23" fill="#111827" stroke="#050505" stroke-width="2"/>
+        <circle cx="336" cy="384" r="23" fill="#111827" stroke="#050505" stroke-width="2"/>
+        <circle cx="384" cy="432" r="23" fill="#f8fafc" stroke="#111827" stroke-width="2.4"/>
+      </g>
+      <g font-size="24" font-weight="850" text-anchor="middle">
+        <circle cx="384" cy="288" r="28" fill="#f7c948" stroke="#6d4b00" stroke-width="4"/>
+        <text x="384" y="297" fill="#111827">1</text>
+        <circle cx="432" cy="336" r="28" fill="#f7c948" stroke="#6d4b00" stroke-width="4"/>
+        <text x="432" y="345" fill="#111827">2</text>
+        <circle cx="336" cy="336" r="28" fill="#f7c948" stroke="#6d4b00" stroke-width="4"/>
+        <text x="336" y="345" fill="#111827">3</text>
+      </g>
+      <g text-anchor="middle" font-size="22" font-weight="850">
+        <circle cx="480" cy="384" r="38" fill="none" stroke="#0f62fe" stroke-width="9"/>
+        <circle cx="480" cy="384" r="24" fill="#ffffff" stroke="#0f62fe" stroke-width="4"/>
+        <text x="480" y="392" fill="#111827">M</text>
+      </g>
+    </g>
+
+    <g transform="translate(850 740)">
+      <circle cx="18" cy="0" r="13" fill="#f7c948" stroke="#6d4b00" stroke-width="3"/>
+      <text x="42" y="8" font-size="21" fill="#48515d">KataGo candidate</text>
+      <circle cx="270" cy="0" r="17" fill="none" stroke="#0f62fe" stroke-width="6"/>
+      <text x="300" y="8" font-size="21" fill="#48515d">Model move</text>
+    </g>
+
+    <text x="116" y="794" font-size="24" font-weight="760" fill="#121418">github.com/GoBenchmark/GoBench</text>
+  </g>
+</svg>
