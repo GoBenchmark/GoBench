@@ -13,7 +13,7 @@ body:
         Simple flow:
 
         1. Run `python -m gobench.cli bundle-submission "$RUN_DIR"`.
-        2. Run `shasum -a 256 "$RUN_DIR-submission.tar.gz"`.
+        2. Run `sha256sum "$RUN_DIR-submission.tar.gz" 2>/dev/null || shasum -a 256 "$RUN_DIR-submission.tar.gz"`.
         3. Fill in this issue form with aggregate metrics and archive SHA-256.
         4. Do not attach the archive publicly. The maintainer will coordinate private upload instructions in this GitHub issue.
 
@@ -50,7 +50,7 @@ body:
       placeholder: |
         python -m gobench.cli run --model-profile .gobench/model.yaml --suite suites/official_v0_1.yaml --out data/runs/...
         python -m gobench.cli bundle-submission data/runs/...
-        shasum -a 256 data/runs/...-submission.tar.gz
+        sha256sum data/runs/...-submission.tar.gz 2>/dev/null || shasum -a 256 data/runs/...-submission.tar.gz
     validations:
       required: true
   - type: textarea
@@ -80,7 +80,7 @@ body:
     attributes:
       label: Submission archive SHA-256
       description: SHA-256 of the local `*-submission.tar.gz` archive. Do not attach the archive here.
-      placeholder: "shasum -a 256 your-model-official-v0-1-submission.tar.gz"
+      placeholder: "sha256sum your-model-official-v0-1-submission.tar.gz 2>/dev/null || shasum -a 256 your-model-official-v0-1-submission.tar.gz"
     validations:
       required: true
   - type: textarea

@@ -12,6 +12,7 @@ from gobench.cli import (
     api_timeout_seconds,
     bundle_submission,
     cmd_configure,
+    display_metric_numbers,
     extract_anthropic_text,
     format_duration,
     generate_from_profile,
@@ -23,6 +24,7 @@ from gobench.cli import (
     preserve_existing_run_metadata,
     progress_line,
     recover_completed_raw_predictions,
+    request_anthropic_move,
     request_openai_chat_move,
     resolve_default_model_profile,
     score_predictions_for_suite,
@@ -145,6 +147,24 @@ def test_api_timeout_seconds_validates_env(monkeypatch):
 
     with pytest.raises(RuntimeError):
         api_timeout_seconds()
+
+
+def test_display_metric_numbers_rounds_score_and_point_loss_only():
+    summary = {
+        "metrics": {
+            "gobench_score": 12.3456,
+            "mean_point_loss": 7.891,
+            "legal_move_rate": 0.3333333333,
+            "phase_mpl": {"opening": 1.234, "endgame": 5.678},
+        }
+    }
+
+    display = display_metric_numbers(summary)
+
+    assert display["metrics"]["gobench_score"] == 12.35
+    assert display["metrics"]["mean_point_loss"] == 7.89
+    assert display["metrics"]["legal_move_rate"] == 0.3333333333
+    assert display["metrics"]["phase_mpl"] == {"opening": 1.23, "endgame": 5.68}
 
 
 def test_format_duration_uses_clock_style():
@@ -302,9 +322,10 @@ def test_configure_deepseek_preset_writes_openai_compatible_profile(tmp_path, mo
 
 
 def test_list_model_presets_includes_popular_provider_shortcuts():
-    names = {row["name"] for row in list_model_presets()}
+    presets = {row["name"]: row for row in list_model_presets()}
 
-    assert {"claude-opus", "deepseek", "gemini", "minimax", "openrouter"}.issubset(names)
+    assert {"claude-opus", "deepseek", "gemini", "minimax", "openrouter"}.issubset(presets)
+    assert presets["claude-opus"]["reasoning_effort"] == "xhigh"
 
 
 def test_default_model_profile_prefers_local_config(tmp_path, monkeypatch):
@@ -367,6 +388,57 @@ def test_request_openai_chat_move_uses_profile_base_url_and_key():
     assert headers["Authorization"] == "Bearer secret"
     assert payload["model"] == "deepseek-v4-pro"
     assert payload["reasoning_effort"] == "high"
+
+
+def test_request_anthropic_move_sends_effort_output_config():
+    calls = []
+
+    class FakeResponse:
+        status_code = 200
+        text = ""
+
+        def json(self):
+            return {
+                "id": "msg-test",
+                "content": [{"type": "text", "text": '{"move":"Q16"}'}],
+                "usage": {"input_tokens": 10, "output_tokens": 4},
+            }
+
+    class FakeClient:
+        def post(self, url, headers, json):
+            calls.append((url, headers, json))
+            return FakeResponse()
+
+    profile = ModelProfile(
+        path=Path("model.yaml"),
+        name="claude-opus",
+        provider="anthropic",
+        model="claude-opus-4-8",
+        reasoning_effort="xhigh",
+        temperature=None,
+        max_output_tokens=4096,
+        prompt_template="prompt.txt",
+        api_key_env="ANTHROPIC_API_KEY",
+        api_base="https://api.anthropic.com",
+    )
+
+    text, response_id, status, usage = request_anthropic_move(
+        FakeClient(),
+        "secret",
+        profile,
+        "Return JSON.",
+        Position(position_id="dev_000001", to_move="B"),
+    )
+
+    assert text == '{"move":"Q16"}'
+    assert response_id == "msg-test"
+    assert status == "completed"
+    assert usage == {"input_tokens": 10, "output_tokens": 4}
+    url, headers, payload = calls[0]
+    assert url == "https://api.anthropic.com/v1/messages"
+    assert headers["x-api-key"] == "secret"
+    assert payload["model"] == "claude-opus-4-8"
+    assert payload["output_config"] == {"effort": "xhigh"}
 
 
 def test_extract_anthropic_text_joins_text_blocks():

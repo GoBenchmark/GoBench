@@ -273,7 +273,7 @@ python -m gobench.cli run \
 
 python -m gobench.cli bundle-submission "$RUN_DIR"
 
-shasum -a 256 "$RUN_DIR-submission.tar.gz"
+sha256sum "$RUN_DIR-submission.tar.gz" 2>/dev/null || shasum -a 256 "$RUN_DIR-submission.tar.gz"
 ```
 
 All submissions start on GitHub:

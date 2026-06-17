@@ -70,6 +70,7 @@ MODEL_PRESETS: dict[str, dict[str, Any]] = {
     "claude-opus": {
         "provider": "anthropic",
         "model": "claude-opus-4-8",
+        "reasoning_effort": "xhigh",
         "api_key_env": "ANTHROPIC_API_KEY",
         "api_base": "https://api.anthropic.com",
     },
@@ -228,10 +229,10 @@ def main() -> None:
 
     run_openai_parser = subparsers.add_parser("run-openai")
     add_model_run_parser(run_openai_parser)
-    add_run_visualization_parser(run_openai_parser)
+    add_run_visualization_parser(run_openai_parser, default_visualize=True, default_open=True)
     run_model_parser = subparsers.add_parser("run-model")
     add_model_run_parser(run_model_parser)
-    add_run_visualization_parser(run_model_parser)
+    add_run_visualization_parser(run_model_parser, default_visualize=True, default_open=True)
 
     leaderboard_parser = subparsers.add_parser("leaderboard")
     leaderboard_parser.add_argument("runs_dir", nargs="?", default="data/runs")
@@ -477,7 +478,7 @@ def cmd_eval_file(positions_path: str, predictions_path: str, labels_path: str |
         if close:
             close()
 
-    print(json.dumps(aggregate_metrics(results), indent=2, sort_keys=True))
+    print(json.dumps(display_metric_numbers(aggregate_metrics(results)), indent=2, sort_keys=True))
 
 
 def cmd_make_toy_data(out: str, n: int) -> None:
@@ -957,7 +958,7 @@ def cmd_score(
     out_dir = Path(out or run_dir or "data/runs/scored_predictions")
     predictions_path = Path(predictions) if predictions else out_dir / "predictions.jsonl"
     summary = score_predictions_for_suite(suite, predictions_path, out_dir)
-    print(json.dumps(summary, indent=2, sort_keys=True))
+    print(json.dumps(display_metric_numbers(summary), indent=2, sort_keys=True))
 
 
 def cmd_report(run_dir: str) -> None:
@@ -1278,6 +1279,24 @@ def write_summary_files(summary: dict[str, Any], out_dir: Path) -> None:
     (out_dir / "report.md").write_text(render_markdown_report(summary), encoding="utf-8")
 
 
+def display_metric_numbers(value: Any) -> Any:
+    if isinstance(value, dict):
+        rounded: dict[str, Any] = {}
+        for key, item in value.items():
+            if key in {"gobench_score", "mean_point_loss"} and isinstance(item, (int, float)):
+                rounded[key] = round(item, 2)
+            elif key == "phase_mpl" and isinstance(item, dict):
+                rounded[key] = {
+                    phase: round(mpl, 2) if isinstance(mpl, (int, float)) else mpl for phase, mpl in item.items()
+                }
+            else:
+                rounded[key] = display_metric_numbers(item)
+        return rounded
+    if isinstance(value, list):
+        return [display_metric_numbers(item) for item in value]
+    return value
+
+
 def checkpoint_generation_row(
     out_dir: Path,
     predictions: list[MoveSubmission],
@@ -1336,7 +1355,7 @@ def cmd_run_profile(
             refresh_candidates,
         )
         write_summary_files(summary, out_dir)
-    print(json.dumps(summary, indent=2, sort_keys=True))
+    print(json.dumps(display_metric_numbers(summary), indent=2, sort_keys=True))
 
 
 def cmd_run_openai(
@@ -1375,7 +1394,7 @@ def cmd_run_openai(
             refresh_candidates,
             timer.started_at,
         )
-    print(json.dumps(summary, indent=2, sort_keys=True))
+    print(json.dumps(display_metric_numbers(summary), indent=2, sort_keys=True))
 
 
 def run_openai_impl(
@@ -1902,6 +1921,8 @@ def request_anthropic_move(
         "messages": [{"role": "user", "content": position.model_dump_json()}],
         "max_tokens": model_profile.max_output_tokens,
     }
+    if model_profile.reasoning_effort:
+        payload["output_config"] = {"effort": model_profile.reasoning_effort}
     if model_profile.temperature is not None:
         payload["temperature"] = model_profile.temperature
     try:
