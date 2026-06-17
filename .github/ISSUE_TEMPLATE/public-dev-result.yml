@@ -1,0 +1,84 @@
+name: Public-Dev Result
+description: Share a public-dev GoBench result for discussion, debugging, or comparison.
+title: "Public-Dev Result: <model name>"
+labels:
+  - benchmark-submission
+  - public-dev
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for `public_dev` results. Public-dev results are welcome for debugging and comparison, but they are not official leaderboard claims.
+
+        Paste aggregate metrics and the command you ran. Do not include API keys, private credentials, or hidden-suite artifacts.
+  - type: input
+    id: model_name
+    attributes:
+      label: Model name
+      placeholder: "provider/model-id"
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Provider or API gateway
+      placeholder: "OpenAI, Anthropic, DeepSeek, Gemini, OpenRouter, MiniMax, ..."
+    validations:
+      required: true
+  - type: input
+    id: suite
+    attributes:
+      label: Suite
+      value: "public_dev"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command used
+      description: Paste the GoBench command. Redact API keys and private paths if needed.
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Aggregate metrics
+      render: markdown
+      placeholder: |
+        GoBench Score:
+        Mean Point Loss:
+        Legal Move Rate:
+        Top-3 Match:
+        Blunder Rate:
+        Positions Scored:
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and scorer
+      description: Include scorer mode, KataGo settings if used, GoBench commit, and any prompt/profile changes.
+      placeholder: |
+        GoBench commit:
+        scorer:
+        prompt/profile:
+        KATAGO_CONFIG:
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I understand this is a public-dev result, not an official leaderboard claim.
+          required: true
+        - label: I did not include API keys, private credentials, or hidden-suite artifacts.
+          required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional observations, failure modes, or prompt notes.
+    validations:
+      required: false

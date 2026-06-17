@@ -10,6 +10,17 @@ Codex runners, shell-based agent loops, browser/computer-use automation, and
 other tool-using runtimes are development experiments only and are not accepted
 as official leaderboard results.
 
+## Choose a Submission Type
+
+- **Official hidden-suite result:** use the
+  [Official Submission Request issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=official-submission.yml).
+  This starts the review publicly on GitHub, but the hidden-suite archive stays
+  private. Paste only aggregate metrics and metadata into the issue.
+- **Public-dev/community result:** use the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
+  These results are public debugging/comparison reports, not leaderboard
+  claims.
+
 ## Command Template
 
 After receiving authorized access to the official hidden suite, create a
@@ -32,13 +43,24 @@ python -m gobench.cli run \
   --no-visualize
 
 python -m gobench.cli bundle-submission "$RUN_DIR"
+
+shasum -a 256 "$RUN_DIR-submission.tar.gz"
 ```
 
-`bundle-submission` validates the required files and writes
-`data/runs/your-model-official-v0-1-submission.tar.gz`. Submit the archive
-through the maintainer-approved submission channel. Do not publish hidden-suite
-positions, labels, prompts containing hidden positions, or visualization
-artifacts for official runs.
+All submissions start on GitHub:
+
+- **Official hidden-suite result:** open the
+  [Official Submission Request issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=official-submission.yml).
+  Fill in the aggregate metrics, prompt hash, scorer settings, and archive
+  SHA-256. Do not attach the `*-submission.tar.gz` archive publicly; the
+  maintainer will coordinate private upload instructions in the GitHub issue.
+- **Public-dev/community result:** open the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
+  Paste the command and aggregate metrics. Public-dev issues are for debugging
+  and comparison, not official leaderboard claims.
+
+Do not publish hidden-suite positions, labels, prompts containing hidden
+positions, visualization artifacts, or raw hidden-suite run artifacts.
 
 For each run, keep:
 

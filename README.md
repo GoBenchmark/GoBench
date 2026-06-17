@@ -272,13 +272,24 @@ python -m gobench.cli run \
   --no-visualize
 
 python -m gobench.cli bundle-submission "$RUN_DIR"
+
+shasum -a 256 "$RUN_DIR-submission.tar.gz"
 ```
 
-`bundle-submission` validates the required files and writes
-`data/runs/your-model-official-v0-1-submission.tar.gz`. Submit that archive
-plus the checklist in `docs/submission.md` through the maintainer-approved
-submission channel. Do not publish hidden-suite positions, labels, prompts
-containing hidden positions, or visualization artifacts for official runs.
+All submissions start on GitHub:
+
+- **Official hidden-suite result:** open the
+  [Official Submission Request issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=official-submission.yml).
+  Fill in the aggregate metrics, prompt hash, scorer settings, and archive
+  SHA-256. Do not attach the `*-submission.tar.gz` archive publicly; the
+  maintainer will coordinate private upload instructions in the GitHub issue.
+- **Public-dev/community result:** open the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
+  Paste the command and aggregate metrics. Public-dev issues are for debugging
+  and comparison, not official leaderboard claims.
+
+Do not publish hidden-suite positions, labels, prompts containing hidden
+positions, visualization artifacts, or raw hidden-suite run artifacts.
 
 The following are not accepted as official leaderboard submissions:
 `codex_exec`, `codex exec`, private Codex runners, shell-based agent loops,

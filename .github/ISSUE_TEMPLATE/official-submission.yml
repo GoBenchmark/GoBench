@@ -1,0 +1,134 @@
+name: Official Submission Request
+description: Request review for an official hidden-suite GoBench result.
+title: "Official Submission Request: <model name>"
+labels:
+  - benchmark-submission
+  - official
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for official `official_v0_1` leaderboard requests. If you only ran the open public-dev suite, use the Public-Dev Result form instead.
+
+        Simple flow:
+
+        1. Run `python -m gobench.cli bundle-submission "$RUN_DIR"`.
+        2. Run `shasum -a 256 "$RUN_DIR-submission.tar.gz"`.
+        3. Fill in this issue form with aggregate metrics and archive SHA-256.
+        4. Do not attach the archive publicly. The maintainer will coordinate private upload instructions in this GitHub issue.
+
+        Never publish hidden-suite positions, labels, prompts containing hidden positions, visualization output, or raw hidden-suite artifacts in this public issue.
+  - type: input
+    id: model_name
+    attributes:
+      label: Model name
+      description: Exact public model name or API model id.
+      placeholder: "provider/model-id"
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Provider or API gateway
+      placeholder: "OpenAI, Anthropic, DeepSeek, Gemini, OpenRouter, MiniMax, ..."
+    validations:
+      required: true
+  - type: input
+    id: suite
+    attributes:
+      label: Suite
+      description: Official submissions must use the closed official suite.
+      value: "official_v0_1"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command used
+      description: Paste the GoBench commands used to configure, run, bundle, and hash the result. Redact API keys.
+      render: bash
+      placeholder: |
+        python -m gobench.cli run --model-profile .gobench/model.yaml --suite suites/official_v0_1.yaml --out data/runs/...
+        python -m gobench.cli bundle-submission data/runs/...
+        shasum -a 256 data/runs/...-submission.tar.gz
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Aggregate metrics
+      description: Paste aggregate metrics from `metrics.json` or `report.md`. Do not include hidden positions, per-position hidden data, raw responses, or visualization artifacts.
+      render: markdown
+      placeholder: |
+        GoBench Score:
+        Mean Point Loss:
+        Legal Move Rate:
+        Top-3 Match:
+        Blunder Rate:
+        Positions Scored:
+    validations:
+      required: true
+  - type: input
+    id: prompt_sha256
+    attributes:
+      label: Prompt SHA-256
+      placeholder: "from run.json or report.md"
+    validations:
+      required: true
+  - type: input
+    id: archive_sha256
+    attributes:
+      label: Submission archive SHA-256
+      description: SHA-256 of the local `*-submission.tar.gz` archive. Do not attach the archive here.
+      placeholder: "shasum -a 256 your-model-official-v0-1-submission.tar.gz"
+    validations:
+      required: true
+  - type: textarea
+    id: scorer
+    attributes:
+      label: Scorer and KataGo settings
+      description: Include KataGo version/config/model, visits, PV length, and any relevant scorer settings.
+      placeholder: |
+        scorer:
+        KATAGO_CONFIG:
+        KATAGO_MAX_VISITS:
+        KATAGO_ANALYSIS_PV_LEN:
+    validations:
+      required: true
+  - type: textarea
+    id: telemetry
+    attributes:
+      label: Run metadata and telemetry
+      description: Include run date, token counts, latency, reasoning/effort setting, temperature, and output token limits when available.
+      placeholder: |
+        run date:
+        reasoning/effort:
+        temperature:
+        max output tokens:
+        input tokens:
+        output tokens:
+        latency:
+    validations:
+      required: false
+  - type: checkboxes
+    id: attestations
+    attributes:
+      label: Official submission attestations
+      options:
+        - label: This result was generated through a documented model API or compatible API gateway.
+          required: true
+        - label: This result did not use codex_exec, private Codex runners, shell/browser/computer-use agents, Go engines, search tools, or other tool-assisted execution.
+          required: true
+        - label: This result used real KataGo scoring, not the mock scorer.
+          required: true
+        - label: I preserved `run.json`, `predictions.jsonl`, `raw_responses.jsonl`, `results.jsonl`, `metrics.json`, and `report.md`.
+          required: true
+        - label: I did not expose hidden-suite positions, labels, prompts containing hidden positions, visualization output, or raw hidden-suite artifacts in this issue.
+          required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes for reviewer
+      description: Optional context, caveats, or reproducibility notes.
+    validations:
+      required: false
