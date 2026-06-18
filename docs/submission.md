@@ -12,14 +12,35 @@ as official leaderboard results.
 
 ## Choose a Submission Type
 
+- **Public-dev/community result:** use the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
+  This is the easiest path. It needs no maintainer approval; valid open issues
+  are ranked automatically in
+  [`leaderboards/public-dev.md`](../leaderboards/public-dev.md).
 - **Official hidden-suite result:** use the
   [Official Submission Request issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=official-submission.yml).
   This starts the review publicly on GitHub, but the hidden-suite archive stays
   private. Paste only aggregate metrics and metadata into the issue.
-- **Public-dev/community result:** use the
-  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
-  These results are public debugging/comparison reports, not leaderboard
-  claims.
+
+## Public-Dev Steps
+
+1. Run the public development suite locally:
+
+```bash
+python -m gobench.cli run \
+  --suite suites/public_dev.yaml \
+  --out data/runs/your-model-public-dev
+```
+
+2. Open the
+   [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
+3. Paste the command you ran and aggregate metrics from `report.md` or
+   `metrics.json`.
+4. Leave the issue open. If the issue has valid Score and MPL fields, it will
+   be ranked automatically in the public-dev leaderboard.
+
+Public-dev results are public debugging/comparison reports, not official
+leaderboard claims.
 
 ## Official Hidden-Suite Steps
 

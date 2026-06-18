@@ -10,7 +10,15 @@ body:
       value: |
         Use this form for `public_dev` results. Public-dev results are welcome for debugging and comparison, but they are not official leaderboard claims.
 
-        Paste aggregate metrics and the command you ran. Do not include API keys, private credentials, or hidden-suite artifacts.
+        No maintainer approval is required for the public-dev board. Valid open issues with Score and MPL are ranked automatically in `leaderboards/public-dev.md`.
+
+        Quick flow:
+
+        1. Run `python -m gobench.cli run --suite suites/public_dev.yaml --out data/runs/your-model-public-dev`.
+        2. Paste the command and aggregate metrics from `report.md` or `metrics.json`.
+        3. Keep this issue open to stay on the public-dev leaderboard.
+
+        Do not include API keys, private credentials, or hidden-suite artifacts.
   - type: input
     id: model_name
     attributes:
@@ -38,12 +46,17 @@ body:
       label: Command used
       description: Paste the GoBench command. Redact API keys and private paths if needed.
       render: bash
+      placeholder: |
+        python -m gobench.cli run \
+          --suite suites/public_dev.yaml \
+          --out data/runs/your-model-public-dev
     validations:
       required: true
   - type: textarea
     id: metrics
     attributes:
       label: Aggregate metrics
+      description: The public leaderboard parser uses GoBench Score and Mean Point Loss for ranking.
       render: markdown
       placeholder: |
         GoBench Score:

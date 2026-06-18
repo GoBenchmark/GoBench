@@ -228,6 +228,20 @@ Build a local leaderboard from saved runs:
 python -m gobench.cli leaderboard data/runs
 ```
 
+## 📊 Leaderboards
+
+GoBench has two tracks:
+
+- **Public-dev leaderboard:** an open community board for `public_dev` runs.
+  It is easy to try, needs no approval, and valid open GitHub issues are ranked
+  automatically. Submit with the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml)
+  and view the board in [`leaderboards/public-dev.md`](leaderboards/public-dev.md).
+- **Official hidden-suite leaderboard:** the serious benchmark board for the
+  closed `official_v0_1` suite. It requires authorized hidden-suite access,
+  real KataGo scoring, preserved artifacts, and maintainer review. View the
+  board in [`leaderboards/official.md`](leaderboards/official.md).
+
 <a id="official-benchmark-submissions"></a>
 
 ## 🏁 Official Benchmark Submissions
@@ -297,12 +311,15 @@ sha256sum "$RUN_DIR-submission.tar.gz" 2>/dev/null || shasum -a 256 "$RUN_DIR-su
 6. Do not attach the `*-submission.tar.gz` archive publicly; the maintainer
    will coordinate private archive transfer/review in the GitHub issue.
 
-Public-dev/community results use a separate, fully public path:
+Public-dev/community results use a separate, fully public path. No approval is
+needed for the public board:
 
 - **Public-dev/community result:** open the
   [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
-  Paste the command and aggregate metrics. Public-dev issues are for debugging
-  and comparison, not official leaderboard claims.
+  Paste the command and aggregate metrics. Valid open public-dev issues are
+  ranked automatically in [`leaderboards/public-dev.md`](leaderboards/public-dev.md).
+  Public-dev issues are for debugging and comparison, not official leaderboard
+  claims.
 
 Do not publish hidden-suite positions, labels, prompts containing hidden
 positions, visualization artifacts, or raw hidden-suite run artifacts.
