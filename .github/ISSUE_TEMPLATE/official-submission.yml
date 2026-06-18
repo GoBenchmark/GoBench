@@ -10,12 +10,17 @@ body:
       value: |
         Use this form for official `official_v0_1` leaderboard requests. If you only ran the open public-dev suite, use the Public-Dev Result form instead.
 
+        Authorized hidden-suite access is granted by the maintainer through the private `GoBenchmark/gobench-official-suite` repository after approval. That repo link may show `404` until your GitHub account has access.
+
         Simple flow:
 
-        1. Run `python -m gobench.cli bundle-submission "$RUN_DIR"`.
-        2. Run `sha256sum "$RUN_DIR-submission.tar.gz" 2>/dev/null || shasum -a 256 "$RUN_DIR-submission.tar.gz"`.
-        3. Fill in this issue form with aggregate metrics and archive SHA-256.
-        4. Do not attach the archive publicly. The maintainer will coordinate private upload instructions in this GitHub issue.
+        1. Open this issue and wait for maintainer approval/access if you do not already have it.
+        2. Clone the private suite repo and copy hidden `positions.jsonl` into `data/official_v0_1/`.
+        3. Run the official suite locally with real KataGo scoring.
+        4. Run `python -m gobench.cli bundle-submission "$RUN_DIR"`.
+        5. Run `sha256sum "$RUN_DIR-submission.tar.gz" 2>/dev/null || shasum -a 256 "$RUN_DIR-submission.tar.gz"`.
+        6. Fill in this issue form with aggregate metrics and archive SHA-256.
+        7. Do not attach the archive publicly. The maintainer will coordinate private upload instructions in this GitHub issue.
 
         Never publish hidden-suite positions, labels, prompts containing hidden positions, visualization output, or raw hidden-suite artifacts in this public issue.
   - type: input

@@ -252,8 +252,24 @@ Official submissions must:
   settings, token counts, latency, run date, and whether the suite is
   `public_dev` or `official_v0_1`.
 
-After receiving authorized access to the official hidden suite, use this compact
-command flow:
+To submit an official hidden-suite result:
+
+1. Open the
+   [Official Submission Request issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=official-submission.yml).
+2. Wait for maintainer approval. If approved, the maintainer grants your GitHub
+   account read access to the private
+   [`GoBenchmark/gobench-official-suite`](https://github.com/GoBenchmark/gobench-official-suite)
+   repository. The link may show `404` until access is granted.
+3. Clone the private suite repo and copy the hidden positions into your local
+   public GoBench checkout:
+
+```bash
+mkdir -p data/official_v0_1
+cp /path/to/gobench-official-suite/data/official_v0_1/positions.jsonl \
+  data/official_v0_1/positions.jsonl
+```
+
+4. Run the official suite and create a submission bundle:
 
 ```bash
 export GOBENCH_SCORER=katago
@@ -276,13 +292,13 @@ python -m gobench.cli bundle-submission "$RUN_DIR"
 sha256sum "$RUN_DIR-submission.tar.gz" 2>/dev/null || shasum -a 256 "$RUN_DIR-submission.tar.gz"
 ```
 
-All submissions start on GitHub:
+5. Return to the GitHub issue and paste only aggregate metrics, prompt hash,
+   scorer settings, and archive SHA-256.
+6. Do not attach the `*-submission.tar.gz` archive publicly; the maintainer
+   will coordinate private archive transfer/review in the GitHub issue.
 
-- **Official hidden-suite result:** open the
-  [Official Submission Request issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=official-submission.yml).
-  Fill in the aggregate metrics, prompt hash, scorer settings, and archive
-  SHA-256. Do not attach the `*-submission.tar.gz` archive publicly; the
-  maintainer will coordinate private upload instructions in the GitHub issue.
+Public-dev/community results use a separate, fully public path:
+
 - **Public-dev/community result:** open the
   [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml).
   Paste the command and aggregate metrics. Public-dev issues are for debugging
