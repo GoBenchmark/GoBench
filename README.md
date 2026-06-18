@@ -80,7 +80,7 @@ GoBench has two tracks:
 
 <!-- GOBENCH_LEADERBOARDS_START -->
 
-### Public-Dev Snapshot
+### Public-Dev Top 10
 
 [Open full public-dev leaderboard](leaderboards/public-dev.md)
 
@@ -90,7 +90,7 @@ Last updated: `2026-06-18T20:08:13+00:00`
 |---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
 | - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
 
-### Official Snapshot
+### Official Top 10
 
 [Open full official leaderboard](leaderboards/official.md)
 

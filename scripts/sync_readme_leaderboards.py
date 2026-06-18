@@ -15,28 +15,30 @@ def main() -> None:
     parser.add_argument("--readme", default="README.md")
     parser.add_argument("--public", default="leaderboards/public-dev.md")
     parser.add_argument("--official", default="leaderboards/official.md")
+    parser.add_argument("--limit", type=int, default=10, help="maximum leaderboard rows to show in README")
     args = parser.parse_args()
 
     readme = Path(args.readme)
-    rendered = render_block(Path(args.public), Path(args.official))
+    rendered = render_block(Path(args.public), Path(args.official), args.limit)
     update_between_markers(readme, rendered)
     print(f"synced {readme}")
 
 
-def render_block(public_path: Path, official_path: Path) -> str:
-    public = extract_snapshot(public_path)
-    official = extract_snapshot(official_path)
+def render_block(public_path: Path, official_path: Path, limit: int = 10) -> str:
+    public = extract_snapshot(public_path, limit)
+    official = extract_snapshot(official_path, limit)
+    label = f"Top {limit}" if limit > 0 else "Full"
     return "\n".join(
         [
             START,
             "",
-            "### Public-Dev Snapshot",
+            f"### Public-Dev {label}",
             "",
             f"[Open full public-dev leaderboard]({public_path.as_posix()})",
             "",
             public,
             "",
-            "### Official Snapshot",
+            f"### Official {label}",
             "",
             f"[Open full official leaderboard]({official_path.as_posix()})",
             "",
@@ -47,10 +49,10 @@ def render_block(public_path: Path, official_path: Path) -> str:
     )
 
 
-def extract_snapshot(path: Path) -> str:
+def extract_snapshot(path: Path, limit: int = 10) -> str:
     text = path.read_text(encoding="utf-8")
     updated = extract_last_updated(text)
-    table = extract_first_table(text)
+    table = extract_first_table(text, limit)
     if updated:
         return f"{updated}\n\n{table}"
     return table
@@ -63,7 +65,7 @@ def extract_last_updated(text: str) -> str | None:
     return None
 
 
-def extract_first_table(text: str) -> str:
+def extract_first_table(text: str, limit: int = 10) -> str:
     lines = text.splitlines()
     for index, line in enumerate(lines):
         if not line.startswith("|"):
@@ -74,7 +76,11 @@ def extract_first_table(text: str) -> str:
                 break
             table.append(table_line)
         if len(table) >= 2:
-            return "\n".join(table)
+            header = table[:2]
+            rows = table[2:]
+            if limit > 0:
+                rows = rows[:limit]
+            return "\n".join(header + rows)
     raise ValueError("no markdown table found")
 
 
