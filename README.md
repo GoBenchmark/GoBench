@@ -71,6 +71,42 @@ This prototype is intentionally small. It does not implement full-game play, Elo
 
 For the benchmark governance model, official scorer settings, and anti-contamination policy, see `BENCHMARK.md`.
 
+## 📊 Leaderboards
+
+GoBench has two tracks:
+
+- **Public-dev leaderboard:** an open community board for `public_dev` runs.
+  It is easy to try, needs no approval, and valid open GitHub issues are ranked
+  automatically. Submit with the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml)
+  and view the board in [`leaderboards/public-dev.md`](leaderboards/public-dev.md).
+- **Official hidden-suite leaderboard:** the serious benchmark board for the
+  closed `official_v0_1` suite. It requires authorized hidden-suite access,
+  real KataGo scoring, preserved artifacts, and maintainer review. View the
+  board in [`leaderboards/official.md`](leaderboards/official.md).
+
+<!-- GOBENCH_LEADERBOARDS_START -->
+
+### Public-Dev Snapshot
+
+[Open full public-dev leaderboard](leaderboards/public-dev.md)
+
+Last updated: `2026-06-18T20:08:13+00:00`
+
+| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Submitter | Issue |
+|---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
+| - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
+
+### Official Snapshot
+
+[Open full official leaderboard](leaderboards/official.md)
+
+| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Review |
+|---:|---|---|---:|---:|---:|---:|---:|---:|---|
+| - | No approved official submissions yet | - | - | - | - | - | - | - | - |
+
+<!-- GOBENCH_LEADERBOARDS_END -->
+
 ## ⚡ Quick Start
 
 Install GoBench in an isolated environment:
@@ -120,42 +156,6 @@ python -m gobench.cli doctor
 ready. It exits nonzero when required real-scoring pieces are missing. Missing
 KataGo is fine for the no-network smoke test above; real benchmark claims
 should use KataGo scoring.
-
-## 📊 Leaderboards
-
-GoBench has two tracks:
-
-- **Public-dev leaderboard:** an open community board for `public_dev` runs.
-  It is easy to try, needs no approval, and valid open GitHub issues are ranked
-  automatically. Submit with the
-  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml)
-  and view the board in [`leaderboards/public-dev.md`](leaderboards/public-dev.md).
-- **Official hidden-suite leaderboard:** the serious benchmark board for the
-  closed `official_v0_1` suite. It requires authorized hidden-suite access,
-  real KataGo scoring, preserved artifacts, and maintainer review. View the
-  board in [`leaderboards/official.md`](leaderboards/official.md).
-
-<!-- GOBENCH_LEADERBOARDS_START -->
-
-### Public-Dev Snapshot
-
-[Open full public-dev leaderboard](leaderboards/public-dev.md)
-
-Last updated: `2026-06-18T20:08:13+00:00`
-
-| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Submitter | Issue |
-|---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
-| - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
-
-### Official Snapshot
-
-[Open full official leaderboard](leaderboards/official.md)
-
-| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Review |
-|---:|---|---|---:|---:|---:|---:|---:|---:|---|
-| - | No approved official submissions yet | - | - | - | - | - | - | - | - |
-
-<!-- GOBENCH_LEADERBOARDS_END -->
 
 ## 🤖 Run a Model
 
