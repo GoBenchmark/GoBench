@@ -186,7 +186,8 @@ This writes two local files that are ignored by Git:
 - `.gobench/model.yaml`: your default model profile.
 - `.env.local`: your API/scorer environment settings.
 
-Configure KataGo for real scoring:
+Configure KataGo for real scoring. If KataGo is not installed yet, see the
+KataGo Scoring section below first.
 
 ```bash
 export GOBENCH_SCORER=katago
@@ -296,7 +297,53 @@ Each run directory contains `run.json`, `predictions.jsonl`,
 ## ⚖️ KataGo Scoring
 
 Mock scoring exists only for smoke tests. Benchmark-style results should use
-real KataGo scoring:
+real KataGo scoring.
+
+Install KataGo and a neural net:
+
+**macOS:**
+
+```bash
+brew install katago
+brew list --verbose katago
+```
+
+Homebrew installs the `katago` executable plus bundled config/model files. Use
+`brew list --verbose katago` to find the exact `.bin.gz` model path for
+`KATAGO_MODEL`.
+
+**Linux:**
+
+1. Download a Linux release archive from
+   [`lightvector/KataGo` releases](https://github.com/lightvector/KataGo/releases).
+   Pick a backend that matches your machine: OpenCL for many GPUs, CUDA or
+   TensorRT for NVIDIA setups, or Eigen for CPU-only scoring.
+2. Download a `.bin.gz` neural net from
+   [katagotraining.org](https://katagotraining.org/) or from the release notes.
+3. Unpack the archive and make the binary executable:
+
+```bash
+tar -xf katago-*.tar.gz
+chmod +x /path/to/katago
+/path/to/katago version
+```
+
+**Windows:**
+
+1. Download a Windows release archive from
+   [`lightvector/KataGo` releases](https://github.com/lightvector/KataGo/releases).
+   OpenCL is the usual first try; use CUDA/TensorRT only when the matching
+   NVIDIA runtime is installed, or Eigen for CPU-only scoring.
+2. Download a `.bin.gz` neural net from
+   [katagotraining.org](https://katagotraining.org/) or from the release notes.
+3. Unzip the archive, then verify from PowerShell:
+
+```powershell
+.\katago.exe version
+```
+
+After installation, point GoBench at the executable, model, and GoBench scoring
+config:
 
 ```bash
 export GOBENCH_SCORER=katago
@@ -305,6 +352,34 @@ export KATAGO_MODEL=/path/to/model.bin.gz
 export KATAGO_CONFIG=configs/katago_gobench_official.cfg
 export KATAGO_MAX_VISITS=2048
 export KATAGO_ANALYSIS_PV_LEN=12
+export KATAGO_REPORT_ANALYSIS_AS=SIDETOMOVE
+```
+
+On Windows PowerShell, use `$env:` variables instead:
+
+```powershell
+$env:GOBENCH_SCORER="katago"
+$env:KATAGO_BIN="C:\path\to\katago.exe"
+$env:KATAGO_MODEL="C:\path\to\model.bin.gz"
+$env:KATAGO_CONFIG="configs\katago_gobench_official.cfg"
+$env:KATAGO_MAX_VISITS="2048"
+$env:KATAGO_ANALYSIS_PV_LEN="12"
+$env:KATAGO_REPORT_ANALYSIS_AS="SIDETOMOVE"
+```
+
+Example macOS/Homebrew values:
+
+```bash
+export KATAGO_BIN=/opt/homebrew/bin/katago
+export KATAGO_MODEL=/opt/homebrew/Cellar/katago/1.16.4/share/katago/g170-b40c256x2-s5095420928-d1229425124.bin.gz
+export KATAGO_CONFIG=configs/katago_gobench_official.cfg
+```
+
+Verify KataGo before treating a run as a benchmark result:
+
+```bash
+$KATAGO_BIN version
+python -m gobench.cli doctor --suite suites/public_dev.yaml
 ```
 
 Use `python -m gobench.cli doctor` to verify your model profile, API key,
