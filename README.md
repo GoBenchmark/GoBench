@@ -84,7 +84,7 @@ GoBench has two tracks:
 
 [Open full public-dev leaderboard](leaderboards/public-dev.md)
 
-Last updated: `2026-06-18T20:21:14+00:00`
+Last updated: `2026-06-18T20:21:49+00:00`
 
 | Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Submitter | Issue |
 |---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
