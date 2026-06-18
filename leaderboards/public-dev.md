@@ -3,9 +3,9 @@
 This community leaderboard is automatically generated from open GitHub issues labeled `public-dev` and `benchmark-submission`.
 It is meant to make GoBench easy to try and compare. It is not the official hidden-suite benchmark.
 
-Last updated: `2026-06-18T20:15:18+00:00`
+Last updated: `2026-06-18T20:21:14+00:00`
 
-| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Submitter | Issue |
+| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Submitter | Issue |
 |---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
 | - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
 

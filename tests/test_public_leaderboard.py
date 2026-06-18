@@ -39,6 +39,7 @@ GoBench Score: {score}
 Mean Point Loss: {mpl}
 Legal Move Rate: 100%
 Top-3 Match: 20%
+Top-10 Match: 40%
 Blunder Rate: 10%
 Positions Scored: 10
 """,
@@ -56,6 +57,7 @@ def test_parse_submission_extracts_public_dev_metrics():
     assert submission["mean_point_loss"] == 3.21
     assert submission["legal_move_rate"] == 1.0
     assert submission["top3_match_rate"] == 0.2
+    assert submission["top10_match_rate"] == 0.4
     assert submission["positions_scored"] == 10
 
 
@@ -93,4 +95,5 @@ def test_script_writes_leaderboard_from_issue_json(tmp_path):
     )
 
     rendered = out_path.read_text(encoding="utf-8")
+    assert "| Rank | Model | Provider | Score | MPL | Legal | Top-10 |" in rendered
     assert "| 1 | example/model | Example Provider | 55.68 | 2.35 |" in rendered

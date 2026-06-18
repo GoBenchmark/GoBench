@@ -143,6 +143,7 @@ def parse_submission(issue: dict[str, Any]) -> dict[str, Any] | None:
         "mean_point_loss": mpl,
         "legal_move_rate": metrics.get("legal_move_rate"),
         "top3_match_rate": metrics.get("top3_match_rate"),
+        "top10_match_rate": metrics.get("top10_match_rate"),
         "blunder_rate": metrics.get("blunder_rate"),
         "positions_scored": int(count) if isinstance(count, (int, float)) else None,
         "updated_at": str(issue.get("updated_at") or issue.get("created_at") or ""),
@@ -174,6 +175,9 @@ def parse_metrics(text: str) -> dict[str, float]:
         "top-3 match": "top3_match_rate",
         "top3 match": "top3_match_rate",
         "top-3": "top3_match_rate",
+        "top-10 match": "top10_match_rate",
+        "top10 match": "top10_match_rate",
+        "top-10": "top10_match_rate",
         "blunder rate": "blunder_rate",
         "blunder": "blunder_rate",
         "positions scored": "positions_scored",
@@ -221,20 +225,20 @@ def render_public_leaderboard(submissions: list[dict[str, Any]], generated_at: s
         "",
         f"Last updated: `{generated_at}`",
         "",
-        "| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Submitter | Issue |",
+        "| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Submitter | Issue |",
         "|---:|---|---|---:|---:|---:|---:|---:|---:|---|---|",
     ]
     if submissions:
         for rank, submission in enumerate(submissions, start=1):
             lines.append(
-                "| {rank} | {model} | {provider} | {score} | {mpl} | {legal} | {top3} | {blunder} | {count} | @{submitter} | [#{issue_number}]({issue_url}) |".format(
+                "| {rank} | {model} | {provider} | {score} | {mpl} | {legal} | {top10} | {blunder} | {count} | @{submitter} | [#{issue_number}]({issue_url}) |".format(
                     rank=rank,
                     model=submission["model"],
                     provider=submission["provider"],
                     score=format_metric(submission["gobench_score"]),
                     mpl=format_metric(submission["mean_point_loss"]),
                     legal=format_percent(submission.get("legal_move_rate")),
-                    top3=format_percent(submission.get("top3_match_rate")),
+                    top10=format_percent(submission.get("top10_match_rate")),
                     blunder=format_percent(submission.get("blunder_rate")),
                     count=submission.get("positions_scored") or "n/a",
                     submitter=submission["submitter"],

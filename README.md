@@ -38,7 +38,7 @@ not being measured.
 - **Mean Point Loss / MPL:** average points lost by the model's move compared
   with KataGo's preferred move. Lower is better.
 - **Legal Moves:** fraction of model outputs that parse as legal Go moves.
-- **Top-3 Match:** fraction of model moves that appear in KataGo's top three
+- **Top-10 Match:** fraction of model moves that appear in KataGo's top ten
   candidate moves for the position.
 - **Blunder Rate:** fraction of moves whose point loss crosses the configured
   blunder threshold.
@@ -84,9 +84,9 @@ GoBench has two tracks:
 
 [Open full public-dev leaderboard](leaderboards/public-dev.md)
 
-Last updated: `2026-06-18T20:15:18+00:00`
+Last updated: `2026-06-18T20:21:14+00:00`
 
-| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Submitter | Issue |
+| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Submitter | Issue |
 |---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
 | - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
 
@@ -94,7 +94,7 @@ Last updated: `2026-06-18T20:15:18+00:00`
 
 [Open full official leaderboard](leaderboards/official.md)
 
-| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Review |
+| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Review |
 |---:|---|---|---:|---:|---:|---:|---:|---:|---|
 | - | No approved official submissions yet | - | - | - | - | - | - | - | - |
 

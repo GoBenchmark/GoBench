@@ -68,7 +68,7 @@ body:
         GoBench Score:
         Mean Point Loss:
         Legal Move Rate:
-        Top-3 Match:
+        Top-10 Match:
         Blunder Rate:
         Positions Scored:
     validations:
