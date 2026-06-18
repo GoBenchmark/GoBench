@@ -76,7 +76,8 @@ GoBench has two tracks:
 - **Official hidden-suite leaderboard:** the serious benchmark board for the
   closed `official_v0_1` suite. It requires authorized hidden-suite access,
   real KataGo scoring, preserved artifacts, and maintainer review. View the
-  board in [`leaderboards/official.md`](leaderboards/official.md).
+  board in [`leaderboards/official.md`](leaderboards/official.md). See
+  [how to make an Official Benchmark Submission](#official-benchmark-submissions).
 
 <!-- GOBENCH_LEADERBOARDS_START -->
 
