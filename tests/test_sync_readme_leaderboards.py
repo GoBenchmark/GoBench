@@ -27,7 +27,7 @@ extra text
         encoding="utf-8",
     )
 
-    assert sync_readme.extract_snapshot(board) == "Last updated: `now`\n\n| Rank | Model |\n|---:|---|\n| 1 | test |"
+    assert sync_readme.extract_snapshot(board) == "Last updated: `now`\n\n| Rank | Model |\n| ---: | --- |\n| 1 | test |"
 
 
 def test_extract_snapshot_limits_readme_table_to_top_10(tmp_path):
@@ -47,6 +47,46 @@ def test_extract_snapshot_limits_readme_table_to_top_10(tmp_path):
 
     assert "model-10" in snapshot
     assert "model-11" not in snapshot
+
+
+def test_extract_snapshot_compacts_full_leaderboard_columns(tmp_path):
+    board = tmp_path / "public-dev.md"
+    board.write_text(
+        """# Public
+
+| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Submitter | Issue |
+|---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
+| 1 | model-a | provider-a | 88.2 | 0.3 | 100% | 90% | 0% | 10 | @alice | #1 |
+""",
+        encoding="utf-8",
+    )
+
+    snapshot = sync_readme.extract_snapshot(board)
+
+    assert "| Rank | Model | Provider | Score | MPL | Top-10 | Submitter |" in snapshot
+    assert "| 1 | model-a | provider-a | 88.2 | 0.3 | 90% | @alice |" in snapshot
+    assert "Legal" not in snapshot
+    assert "Blunder" not in snapshot
+    assert "Count" not in snapshot
+    assert "Issue" not in snapshot
+
+
+def test_extract_snapshot_keeps_official_review_column(tmp_path):
+    board = tmp_path / "official.md"
+    board.write_text(
+        """# Official
+
+| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Review |
+|---:|---|---|---:|---:|---:|---:|---:|---:|---|
+| 1 | model-a | provider-a | 88.2 | 0.3 | 100% | 90% | 0% | 50 | approved |
+""",
+        encoding="utf-8",
+    )
+
+    snapshot = sync_readme.extract_snapshot(board)
+
+    assert "| Rank | Model | Provider | Score | MPL | Top-10 | Review |" in snapshot
+    assert "| 1 | model-a | provider-a | 88.2 | 0.3 | 90% | approved |" in snapshot
 
 
 def test_render_block_labels_snapshots_as_top_10(tmp_path):

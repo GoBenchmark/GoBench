@@ -87,17 +87,17 @@ GoBench has two tracks:
 
 Last updated: `2026-06-18T20:21:49+00:00`
 
-| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Submitter | Issue |
-|---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
-| - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
+| Rank | Model | Provider | Score | MPL | Top-10 | Submitter |
+| ---: | --- | --- | ---: | ---: | ---: | --- |
+| - | No public-dev submissions yet | - | - | - | - | - |
 
 ### Official Top 10
 
 [Open full official leaderboard](leaderboards/official.md)
 
-| Rank | Model | Provider | Score | MPL | Legal | Top-10 | Blunder | Count | Review |
-|---:|---|---|---:|---:|---:|---:|---:|---:|---|
-| - | No approved official submissions yet | - | - | - | - | - | - | - | - |
+| Rank | Model | Provider | Score | MPL | Top-10 | Review |
+| ---: | --- | --- | ---: | ---: | ---: | --- |
+| - | No approved official submissions yet | - | - | - | - | - |
 
 <!-- GOBENCH_LEADERBOARDS_END -->
 

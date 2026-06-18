@@ -80,8 +80,31 @@ def extract_first_table(text: str, limit: int = 10) -> str:
             rows = table[2:]
             if limit > 0:
                 rows = rows[:limit]
-            return "\n".join(header + rows)
+            return compact_table(header + rows)
     raise ValueError("no markdown table found")
+
+
+def compact_table(table: list[str]) -> str:
+    header = split_row(table[0])
+    compact_columns = compact_column_indexes(header)
+    compact_rows = [
+        [cells[index] if index < len(cells) else "" for index in compact_columns]
+        for cells in (split_row(row) for row in table)
+    ]
+    return "\n".join(format_row(row) for row in compact_rows)
+
+
+def compact_column_indexes(header: list[str]) -> list[int]:
+    wanted = ["Rank", "Model", "Provider", "Score", "MPL", "Top-10", "Submitter", "Review"]
+    return [header.index(column) for column in wanted if column in header]
+
+
+def split_row(row: str) -> list[str]:
+    return [cell.strip() for cell in row.strip().strip("|").split("|")]
+
+
+def format_row(cells: list[str]) -> str:
+    return "| " + " | ".join(cells) + " |"
 
 
 def update_between_markers(path: Path, block: str) -> None:
