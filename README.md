@@ -121,6 +121,20 @@ ready. It exits nonzero when required real-scoring pieces are missing. Missing
 KataGo is fine for the no-network smoke test above; real benchmark claims
 should use KataGo scoring.
 
+## 📊 Leaderboards
+
+GoBench has two tracks:
+
+- **Public-dev leaderboard:** an open community board for `public_dev` runs.
+  It is easy to try, needs no approval, and valid open GitHub issues are ranked
+  automatically. Submit with the
+  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml)
+  and view the board in [`leaderboards/public-dev.md`](leaderboards/public-dev.md).
+- **Official hidden-suite leaderboard:** the serious benchmark board for the
+  closed `official_v0_1` suite. It requires authorized hidden-suite access,
+  real KataGo scoring, preserved artifacts, and maintainer review. View the
+  board in [`leaderboards/official.md`](leaderboards/official.md).
+
 ## 🤖 Run a Model
 
 Official leaderboard submissions are API-only. Use direct provider APIs or
@@ -227,20 +241,6 @@ Build a local leaderboard from saved runs:
 ```bash
 python -m gobench.cli leaderboard data/runs
 ```
-
-## 📊 Leaderboards
-
-GoBench has two tracks:
-
-- **Public-dev leaderboard:** an open community board for `public_dev` runs.
-  It is easy to try, needs no approval, and valid open GitHub issues are ranked
-  automatically. Submit with the
-  [Public-Dev Result issue form](https://github.com/GoBenchmark/GoBench/issues/new?template=public-dev-result.yml)
-  and view the board in [`leaderboards/public-dev.md`](leaderboards/public-dev.md).
-- **Official hidden-suite leaderboard:** the serious benchmark board for the
-  closed `official_v0_1` suite. It requires authorized hidden-suite access,
-  real KataGo scoring, preserved artifacts, and maintainer review. View the
-  board in [`leaderboards/official.md`](leaderboards/official.md).
 
 <a id="official-benchmark-submissions"></a>
 
