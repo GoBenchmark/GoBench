@@ -135,6 +135,28 @@ GoBench has two tracks:
   real KataGo scoring, preserved artifacts, and maintainer review. View the
   board in [`leaderboards/official.md`](leaderboards/official.md).
 
+<!-- GOBENCH_LEADERBOARDS_START -->
+
+### Public-Dev Snapshot
+
+[Open full public-dev leaderboard](leaderboards/public-dev.md)
+
+Last updated: `2026-06-18T20:00:13+00:00`
+
+| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Submitter | Issue |
+|---:|---|---|---:|---:|---:|---:|---:|---:|---|---|
+| - | No public-dev submissions yet | - | - | - | - | - | - | - | - | - |
+
+### Official Snapshot
+
+[Open full official leaderboard](leaderboards/official.md)
+
+| Rank | Model | Provider | Score | MPL | Legal | Top-3 | Blunder | Count | Review |
+|---:|---|---|---:|---:|---:|---:|---:|---:|---|
+| - | No approved official submissions yet | - | - | - | - | - | - | - | - |
+
+<!-- GOBENCH_LEADERBOARDS_END -->
+
 ## 🤖 Run a Model
 
 Official leaderboard submissions are API-only. Use direct provider APIs or
